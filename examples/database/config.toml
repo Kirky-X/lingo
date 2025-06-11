@@ -1,0 +1,54 @@
+# 数据库配置示例文件
+# 这个文件展示了 Lingo 数据库配置的所有可用选项
+
+# 主数据库配置
+db_type = "postgres"          # 数据库类型: postgres, mysql, sqlite
+host = "localhost"            # 数据库主机地址
+port = 5432                   # 数据库端口
+database = "myapp"            # 数据库名称
+username = "postgres"         # 数据库用户名
+password = "secret123"        # 数据库密码
+connect_timeout = 30          # 连接超时（秒）
+query_timeout = 60            # 查询超时（秒）
+application_name = "lingo_app" # 应用程序名称
+
+# 只读副本配置（读写分离）
+[replica]
+enabled = false               # 启用读写分离
+host = "replica.localhost"    # 只读副本主机
+port = 5432                   # 只读副本端口
+database = "myapp"            # 只读副本数据库名
+username = "readonly"         # 只读副本用户名
+password = "readonly123"      # 只读副本密码
+
+# 连接池配置
+[pool]
+min_connections = 2           # 最小连接数
+max_connections = 20          # 最大连接数
+idle_timeout = 600            # 连接空闲超时（秒）
+max_lifetime = 3600           # 连接最大生命周期（秒）
+acquire_timeout = 30          # 获取连接超时（秒）
+test_query = "SELECT 1"       # 连接测试查询
+
+# 数据库迁移配置
+[migration]
+auto_migrate = true           # 启用自动迁移
+migrations_dir = "./migrations" # 迁移文件目录
+migrations_table = "_migrations" # 迁移记录表名
+migration_timeout = 300       # 迁移超时（秒）
+
+# SSL/TLS 配置
+[ssl]
+enabled = false               # 启用 SSL
+mode = "prefer"               # SSL 模式: disable, allow, prefer, require, verify-ca, verify-full
+ca_cert_file = "/path/to/ca.crt"     # CA 证书文件
+client_cert_file = "/path/to/client.crt" # 客户端证书文件
+client_key_file = "/path/to/client.key"  # 客户端私钥文件
+
+# 监控和日志配置
+[monitoring]
+log_queries = false           # 启用查询日志
+slow_query_threshold = 1000   # 慢查询阈值（毫秒）
+monitor_pool = true           # 启用连接池监控
+monitor_interval = 60         # 监控间隔（秒）
+enable_metrics = false        # 启用性能指标
