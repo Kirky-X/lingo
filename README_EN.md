@@ -5,7 +5,9 @@ A powerful and flexible Rust configuration management library that makes configu
 [![Crates.io](https://img.shields.io/crates/v/lingo.svg)](https://crates.io/crates/lingo)
 [![Documentation](https://docs.rs/lingo/badge.svg)](https://docs.rs/lingo)
 [![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE)
-[![Build Status](https://github.com/Kirky-X/lingo/workflows/CI/badge.svg)](https://github.com/Kirky-X/lingo/actions)
+[![Rust](https://github.com/Kirky-X/lingo/actions/workflows/rust.yml/badge.svg)](https://github.com/Kirky-X/lingo/actions/workflows/rust.yml)
+
+**[中文版本](README.md)** | **[Changelog](CHANGELOG.md)** | **[Documentation](https://docs.rs/lingo)**
 
 ## 🌟 Features
 
@@ -247,7 +249,3 @@ This project is licensed under the Apache-2.0 license. See [LICENSE](LICENSE) fo
 - [figment](https://github.com/SergioBenitez/Figment) - Powerful configuration library foundation
 - [clap](https://github.com/clap-rs/clap) - Excellent command-line argument parsing
 - [serde](https://github.com/serde-rs/serde) - Rust serialization framework
-
----
-
-**[中文版本](README.md)** | **[Changelog](CHANGELOG.md)** | **[Documentation](https://docs.rs/lingo)**

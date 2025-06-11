@@ -5,7 +5,9 @@
 [![Crates.io](https://img.shields.io/crates/v/lingo.svg)](https://crates.io/crates/lingo)
 [![Documentation](https://docs.rs/lingo/badge.svg)](https://docs.rs/lingo)
 [![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE)
-[![Build Status](https://github.com/Kirky-X/lingo/workflows/CI/badge.svg)](https://github.com/Kirky-X/lingo/actions)
+[![Rust](https://github.com/Kirky-X/lingo/actions/workflows/rust.yml/badge.svg)](https://github.com/Kirky-X/lingo/actions/workflows/rust.yml)
+
+**[English Version](README_EN.md)** | **[更新日志](CHANGELOG.md)** | **[文档](https://docs.rs/lingo)**
 
 ## 🌟 特性
 
@@ -247,7 +249,3 @@ cargo doc --open
 - [figment](https://github.com/SergioBenitez/Figment) - 强大的配置库基础
 - [clap](https://github.com/clap-rs/clap) - 优秀的命令行参数解析
 - [serde](https://github.com/serde-rs/serde) - Rust 序列化框架
-
----
-
-**[English Version](README_EN.md)** | **[更新日志](CHANGELOG.md)** | **[文档](https://docs.rs/lingo)**
