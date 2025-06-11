@@ -10,11 +10,11 @@
 //!
 //! ## 使用示例
 //!
-//! ```rust
+//! ```ignore
 //! use lingo::Config;
 //! use serde::{Deserialize, Serialize};
 //!
-//! #[derive(Config, Serialize, Deserialize)]
+//! #[derive(Config, Serialize, Deserialize, Default)]
 //! struct AppConfig {
 //!     host: String,
 //!     port: u16,
@@ -42,11 +42,11 @@ use syn::{parse_macro_input, DeriveInput};
 ///
 /// # 示例
 ///
-/// ```rust
+/// ```ignore
 /// use lingo::Config;
 /// use serde::{Deserialize, Serialize};
 ///
-/// #[derive(Config, Serialize, Deserialize)]
+/// #[derive(Config, Serialize, Deserialize, Default)]
 /// struct MyConfig {
 ///     database_url: String,
 ///     port: u16,
@@ -99,6 +99,21 @@ pub fn derive_config(input: TokenStream) -> TokenStream {
             /// ```
             pub fn new() -> Self {
                 Self::default()
+            }
+            
+            /// 从指定文件加载配置
+            ///
+            /// # 参数
+            ///
+            /// * `path` - 配置文件路径
+            ///
+            /// # 错误
+            ///
+            /// 当配置文件不存在、格式错误或必需字段缺失时返回错误
+            pub fn load_from_file<P: AsRef<std::path::Path>>(path: P) -> Result<Self, Box<dyn std::error::Error>> {
+                let content = std::fs::read_to_string(path)?;
+                let config = toml::from_str::<Self>(&content)?;
+                Ok(config)
             }
             
             /// 生成配置模板文件

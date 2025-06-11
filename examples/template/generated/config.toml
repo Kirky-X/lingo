@@ -1,0 +1,118 @@
+# Template Configuration File
+# 
+# This is a comprehensive configuration template for a web application.
+# Modify the values according to your specific requirements.
+
+[app]
+# Application name
+app_name = "Template Example App"
+
+# Application version
+app_version = "0.1.0"
+
+# Environment (development, staging, production)
+environment = "development"
+
+[server]
+# Server host address
+host = "127.0.0.1"
+
+# Server port
+port = 8080
+
+# Maximum number of connections
+max_connections = 1000
+
+# Request timeout in seconds
+timeout = 30
+
+# Enable SSL/TLS
+ssl_enabled = false
+
+[database]
+# Database host
+host = "localhost"
+
+# Database port
+port = 5432
+
+# Database name
+database = "myapp"
+
+# Database username
+username = "postgres"
+
+# Database password
+password = "password"
+
+# Connection pool size
+pool_size = 10
+
+# Connection timeout in seconds
+timeout = 30
+
+# Enable SSL
+ssl_enabled = false
+
+[redis]
+# Redis connection URL
+url = "redis://localhost:6379"
+
+# Connection pool size
+pool_size = 10
+
+# Connection timeout in seconds
+timeout = 5
+
+# Enable cluster mode
+cluster_enabled = false
+
+[logging]
+# Log level (trace, debug, info, warn, error)
+level = "info"
+
+# Log format (text, json)
+format = "text"
+
+# Log targets (stdout, file)
+targets = ["stdout"]
+
+[security]
+# JWT secret key (change this in production!)
+jwt_secret = "your-secret-key-here"
+
+# JWT expiration time in seconds
+jwt_expiration = 3600
+
+# CORS allowed origins
+cors_origins = ["http://localhost:3000"]
+
+# Enable CSRF protection
+csrf_enabled = true
+
+[encryption]
+# Encryption algorithm
+algorithm = "AES-256-GCM"
+
+# Encryption key size
+key_size = 256
+
+# Key derivation iterations
+iterations = 100000
+
+[monitoring]
+# Health check endpoint path
+health_check_path = "/health"
+
+# Metrics endpoint path
+metrics_path = "/metrics"
+
+[tracing]
+# Tracing endpoint
+endpoint = "http://localhost:14268/api/traces"
+
+# Sampling rate (0.0 to 1.0)
+sampling_rate = 0.1
+
+# Service name
+service_name = "template-example"

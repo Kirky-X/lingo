@@ -1,0 +1,115 @@
+# Lingo 复杂嵌套配置示例
+# 这个配置文件展示了如何使用 TOML 格式定义复杂的嵌套配置结构
+
+# 应用程序基本信息
+name = "Nested Configuration Example"
+version = "0.1.0"
+environment = "development"
+debug = true
+
+# 服务器配置
+[server]
+host = "127.0.0.1"
+port = 8080
+workers = 4
+timeout = 30
+max_body_size = 1048576  # 1MB
+
+# 可选的 TLS 配置
+# [server.tls]
+# enabled = true
+# cert_file = "/path/to/cert.pem"
+# key_file = "/path/to/key.pem"
+
+# 数据库配置
+[database]
+host = "localhost"
+port = 5432
+database = "app_db"
+username = "app_user"
+password = "password"
+pool_size = 10
+timeout = 30
+
+# 可选的 SSL 配置
+# [database.ssl]
+# enabled = true
+# cert_path = "/path/to/client-cert.pem"
+# key_path = "/path/to/client-key.pem"
+# ca_path = "/path/to/ca-cert.pem"
+
+# Redis 配置（可选）
+[redis]
+host = "localhost"
+port = 6379
+db = 0
+# password = "redis_password"  # 可选
+pool_size = 5
+
+# 日志配置
+[logging]
+level = "info"
+format = "text"  # 可选值: "text", "json"
+
+# 日志输出目标
+[[logging.targets]]
+target_type = "console"
+min_level = "debug"
+
+[[logging.targets]]
+target_type = "file"
+path = "./logs/app.log"
+min_level = "info"
+
+# 日志轮转配置
+[logging.rotation]
+max_size = 100  # MB
+max_files = 10
+compress = true
+
+# 功能特性配置
+[features]
+enabled = ["authentication", "rate_limiting", "caching"]
+
+# 功能特性的具体设置
+[features.settings]
+[features.settings.rate_limiting]
+requests_per_minute = 1000
+burst_size = 100
+
+[features.settings.caching]
+ttl_seconds = 3600
+max_entries = 10000
+
+# 外部服务配置
+[external_services]
+
+[external_services.payment_service]
+url = "https://api.payment.example.com"
+# api_key = "your_api_key_here"  # 可选
+timeout = 30
+retries = 3
+
+[external_services.payment_service.headers]
+"Content-Type" = "application/json"
+"User-Agent" = "NestedExample/0.1.0"
+
+[external_services.notification_service]
+url = "https://api.notifications.example.com"
+api_key = "notification_api_key"
+timeout = 15
+retries = 2
+
+[external_services.notification_service.headers]
+"Accept" = "application/json"
+
+# 监控配置（可选）
+[monitoring]
+enabled = true
+endpoint = "http://localhost:9090/metrics"
+sample_rate = 0.1
+
+[monitoring.tags]
+service = "nested-example"
+version = "0.1.0"
+environment = "development"

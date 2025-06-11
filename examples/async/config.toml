@@ -1,0 +1,47 @@
+# Lingo 异步配置示例配置文件
+# 这个文件展示了异步应用程序的完整配置结构
+
+# 应用程序基本信息
+name = "Async Configuration Example"
+version = "0.1.0"
+debug = true
+port = 8080
+max_connections = 1000
+request_timeout = 30
+
+# 配置热重载设置
+config_reload_interval = 30
+hot_reload = true
+
+# HTTP客户端配置
+[http_client]
+base_url = "https://api.example.com"
+timeout = 30
+max_retries = 3
+retry_interval = 1000
+user_agent = "AsyncExample/0.1.0"
+compression = true
+
+# 任务调度器配置
+[scheduler]
+enabled = true
+worker_threads = 4
+queue_size = 1000
+task_timeout = 300
+cleanup_interval = 60
+
+# 缓存配置
+[cache]
+enabled = true
+cache_type = "memory"  # 可选值: memory, redis, hybrid
+default_ttl = 3600
+max_entries = 10000
+cleanup_interval = 300
+
+# 监控和指标配置
+[metrics]
+enabled = true
+endpoint = "http://localhost:9090/metrics"
+collection_interval = 10
+batch_size = 100
+buffer_size = 1000

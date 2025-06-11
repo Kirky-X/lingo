@@ -1,0 +1,178 @@
+# Template Example App
+# 配置文件模板
+# 这个文件包含了应用程序的所有配置选项和详细说明
+
+# ==================== 应用程序基本配置 ====================
+[app]
+# 应用程序名称
+app_name = "Template Example App"
+
+# 应用程序版本
+app_version = "0.1.0"
+
+# 运行环境: development, staging, production
+environment = "development"
+
+# ==================== 服务器配置 ====================
+[server]
+# 服务器监听地址
+host = "127.0.0.1"
+
+# 服务器端口
+port = 8080
+
+# ==================== 数据库配置 ====================
+
+[database]
+# 数据库主机地址
+host = "localhost"
+
+# 数据库端口
+port = 5432
+
+# 数据库名称
+database = "myapp"
+
+# 用户名
+username = "postgres"
+
+# 密码 (建议使用环境变量)
+password = "password"
+
+# 最大连接数
+pool_size = 10
+
+# 连接超时（秒）
+timeout = 30
+
+# 是否启用SSL
+ssl_enabled = false
+
+# SSL证书路径 (可选)
+# ssl_cert_path = "/path/to/cert.pem"
+
+# ==================== Redis缓存配置 ====================
+
+[redis]
+# Redis服务器地址
+url = "redis://localhost:6379"
+
+# 连接池大小
+pool_size = 10
+
+# 是否启用集群模式
+cluster_enabled = false
+
+# ==================== 日志配置 ====================
+
+[logging]
+# 日志级别: trace, debug, info, warn, error
+level = "info"
+
+# 日志格式: json, text
+format = "text"
+
+# 日志输出目标: stdout, stderr, file
+targets = ["stdout"]
+
+# 日志文件路径 (当targets包含file时)
+# file_path = "/var/log/app.log"
+
+# 日志文件最大大小（MB）
+max_file_size = 100
+
+# 保留的日志文件数量
+max_files = 5
+
+# 是否启用颜色输出
+colored = true
+
+# ==================== 安全配置 ====================
+
+[security]
+# JWT密钥 (建议使用环境变量)
+jwt_secret = "your-secret-key-here"
+
+# JWT过期时间（小时）
+jwt_expiry_hours = 24
+
+# 是否启用CORS
+cors_enabled = true
+
+# 允许的CORS源
+cors_origins = ["http://localhost:3000"]
+
+# ==================== 加密配置 ====================
+[encryption]
+# 加密算法
+algorithm = "AES-256-GCM"
+
+# 密钥长度
+key_length = 256
+
+# 是否启用数据加密
+data_encryption = false
+
+# 加密密钥路径 (可选)
+# key_file_path = "/path/to/encryption.key"
+
+# ==================== 监控配置 ====================
+
+[monitoring]
+# 是否启用监控
+enabled = true
+
+# 指标收集间隔（秒）
+metrics_interval = 30
+
+# 健康检查端点
+health_check_path = "/health"
+
+# Prometheus指标端点
+metrics_path = "/metrics"
+
+# ==================== 分布式追踪配置 ====================
+[tracing]
+# 是否启用追踪
+enabled = false
+
+# 追踪服务端点 (如 Jaeger)
+endpoint = "http://localhost:14268/api/traces"
+
+# 采样率 (0.0 - 1.0)
+sample_rate = 0.1
+
+# 服务名称
+service_name = "template-example"
+
+# ==================== 告警配置 ====================
+[alerting]
+# 是否启用告警
+enabled = false
+
+# 告警通道: email, slack, webhook
+channels = []
+
+# 邮件告警配置 (可选)
+# [monitoring.alerting.email]
+# smtp_host = "smtp.gmail.com"
+# smtp_port = 587
+# from_email = "alerts@example.com"
+# to_emails = ["admin@example.com"]
+# username = "alerts@example.com"
+# password = "your-email-password"
+
+# Slack告警配置 (可选)
+# [monitoring.alerting.slack]
+# webhook_url = "https://hooks.slack.com/services/..."
+# channel = "#alerts"
+# username = "AlertBot"
+
+# Webhook告警配置 (可选)
+# [monitoring.alerting.webhook]
+# url = "https://your-webhook-endpoint.com/alerts"
+# method = "POST"
+# timeout = 30
+# [monitoring.alerting.webhook.headers]
+# "Content-Type" = "application/json"
+# "Authorization" = "Bearer your-token"

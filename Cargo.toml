@@ -1,5 +1,5 @@
 [workspace]
-members = ["lingo-derive", "examples/basic", "examples/web_server", "examples/database"]
+members = ["lingo-derive", "examples/basic", "examples/web_server", "examples/database", "examples/nested", "examples/async", "examples/template"]
 resolver = "2"
 
 [package]
