@@ -7,7 +7,7 @@ A powerful and flexible Rust configuration management library that makes configu
 [![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE)
 [![Rust](https://github.com/Kirky-X/lingo/actions/workflows/rust.yml/badge.svg)](https://github.com/Kirky-X/lingo/actions/workflows/rust.yml)
 
-**[中文版本](README.md)** | **[Changelog](CHANGELOG.md)** | **[Documentation](https://docs.rs/lingo)**
+**[中文](README.md)** | **[Changelog](CHANGELOG.md)** | **[Documentation](https://docs.rs/lingo)**
 
 ## 🌟 Features
 
