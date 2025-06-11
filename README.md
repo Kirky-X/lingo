@@ -4,7 +4,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/lingo.svg)](https://crates.io/crates/lingo)
 [![Documentation](https://docs.rs/lingo/badge.svg)](https://docs.rs/lingo)
-[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Rust](https://github.com/Kirky-X/lingo/actions/workflows/rust.yml/badge.svg)](https://github.com/Kirky-X/lingo/actions/workflows/rust.yml)
 
 **[English](README_EN.md)** | **[更新日志](CHANGELOG.md)** | **[文档](https://docs.rs/lingo)**
