@@ -1,10 +1,10 @@
 [workspace]
-members = ["lingo-derive", "examples/basic", "examples/web_server", "examples/database", "examples/nested", "examples/async", "examples/template"]
+members = ["lingo-derive", "examples/basic", "examples/web_server", "examples/database", "examples/nested", "examples/async", "examples/template", "examples/custom_file_reader"]
 resolver = "2"
 
 [package]
 name = "lingo"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "Apache-2.0"
 authors = ["Kirky.X <Kirky-X@outlook.com>"]

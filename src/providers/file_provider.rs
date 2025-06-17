@@ -1,14 +1,15 @@
-//! 文件配置提供者
+//! 文件配置提供器
 //!
-//! 此模块实现了从配置文件读取数据的 figment Provider。
-//! 支持 TOML、JSON 和 INI 格式，并提供解析深度限制以防止资源耗尽攻击。
+//! 从配置文件读取数据的 figment Provider 实现。
+//! 支持 TOML、JSON 和 INI 格式，并提供解析深度限制。
+//! 支持自定义文件读取器，允许用户自定义文件读取行为。
 
 use crate::error::LingoError;
 use figment::{value::{Map, Value}, Error, Metadata, Profile, Provider};
 use ini::Ini;
 use serde_json::Value as JsonValue;
-use std::fs;
 use std::path::{Path, PathBuf};
+use super::file_reader::{FileReader, StandardFileReader};
 
 /// 配置文件格式枚举
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -42,11 +43,13 @@ impl FileFormat {
     }
 }
 
-/// 文件配置提供者
-///
-/// 从指定的配置文件读取数据，支持多种格式和解析深度限制。
+/// Lingo 文件提供器（泛型版本）
+/// 
+/// 实现了 figment Provider trait，用于从配置文件读取数据。
+/// 支持多种文件格式，并提供解析深度限制以防止资源耗尽攻击。
+/// 支持自定义文件读取器，允许用户自定义文件读取行为。
 #[derive(Debug, Clone)]
-pub struct LingoFileProvider {
+pub struct LingoFileProviderGeneric<R: FileReader> {
     /// 配置文件路径
     path: PathBuf,
     /// 文件格式
@@ -55,30 +58,42 @@ pub struct LingoFileProvider {
     is_required: bool,
     /// 解析深度限制
     max_parse_depth: u32,
+    /// 文件读取器
+    reader: R,
 }
 
-impl LingoFileProvider {
-    /// 创建新的文件提供者
+/// 标准文件提供器类型别名
+/// 
+/// 使用标准文件系统读取器的文件提供器，保持向后兼容性。
+pub type LingoFileProvider = LingoFileProviderGeneric<StandardFileReader>;
+
+impl<R: FileReader> LingoFileProviderGeneric<R> {
+    /// 创建新的文件提供器（泛型版本）
     ///
     /// # Arguments
     /// * `path` - 配置文件路径
     /// * `format` - 文件格式
     /// * `is_required` - 是否为必需文件
     /// * `max_parse_depth` - 解析深度限制
+    /// * `reader` - 文件读取器实现
     pub fn new<P: AsRef<Path>>(
         path: P,
         format: FileFormat,
         is_required: bool,
         max_parse_depth: u32,
+        reader: R,
     ) -> Self {
         Self {
             path: path.as_ref().to_path_buf(),
             format,
             is_required,
             max_parse_depth,
+            reader,
         }
     }
+}
 
+impl LingoFileProvider {
     /// 从文件路径自动推断格式创建提供者
     ///
     /// # Arguments
@@ -106,13 +121,21 @@ impl LingoFileProvider {
                 path: path_ref.to_path_buf(),
             })?;
 
-        Ok(Self::new(path, format, is_required, max_parse_depth))
+        Ok(LingoFileProviderGeneric::new(
+            path,
+            format,
+            is_required,
+            max_parse_depth,
+            StandardFileReader::new(),
+        ))
     }
+}
 
+impl<R: FileReader> LingoFileProviderGeneric<R> {
     /// 读取并解析配置文件
     fn read_and_parse(&self) -> Result<Value, LingoError> {
         // 检查文件是否存在
-        if !self.path.exists() {
+        if !self.reader.exists(&self.path) {
             if self.is_required {
                 return Err(LingoError::SpecifiedFileNotFound {
                     path: self.path.clone(),
@@ -123,12 +146,8 @@ impl LingoFileProvider {
             }
         }
 
-        // 读取文件内容
-        let content = fs::read_to_string(&self.path)
-            .map_err(|e| LingoError::Io {
-                source: e,
-                path: self.path.clone(),
-            })?;
+        // 使用文件读取器读取文件内容
+        let content = self.reader.read_content(&self.path)?;
 
         // 根据格式解析内容
         self.parse_content(&content)
@@ -145,17 +164,8 @@ impl LingoFileProvider {
 
     /// 解析 TOML 内容
     fn parse_toml(&self, content: &str) -> Result<Value, LingoError> {
-        let toml_value: toml_edit::DocumentMut = content
-            .parse()
-            .map_err(|e: toml_edit::TomlError| LingoError::FileParse {
-                path: self.path.clone(),
-                format_name: "TOML".to_string(),
-                source_error: e.to_string(),
-            })?;
-
-        // 将 toml_edit::Document 转换为 JsonValue，然后转换为 figment::Value
-        let json_value = toml_value.as_item().to_string();
-        let parsed: JsonValue = toml::from_str(&json_value)
+        // 直接使用 toml 库解析为 JsonValue
+        let parsed: JsonValue = toml::from_str(content)
             .map_err(|e: toml::de::Error| LingoError::FileParse {
                 path: self.path.clone(),
                 format_name: "TOML".to_string(),
@@ -268,7 +278,7 @@ impl LingoFileProvider {
     }
 }
 
-impl Provider for LingoFileProvider {
+impl<R: FileReader> Provider for LingoFileProviderGeneric<R> {
     fn metadata(&self) -> Metadata {
         Metadata::named(format!("Lingo File Provider ({})", self.path.display()))
     }
@@ -315,11 +325,12 @@ mod tests {
 
     #[test]
     fn test_lingo_file_provider_new() {
-        let provider = LingoFileProvider::new(
+        let provider = LingoFileProviderGeneric::new(
             "/path/to/config.toml",
             FileFormat::Toml,
             true,
             100,
+            StandardFileReader::new(),
         );
 
         assert_eq!(provider.path, PathBuf::from("/path/to/config.toml"));
@@ -352,12 +363,13 @@ mod tests {
 
     #[test]
     fn test_read_nonexistent_required_file() {
-        let provider = LingoFileProvider::new(
+        let provider = LingoFileProviderGeneric::new(
             "/nonexistent/config.toml",
             FileFormat::Toml,
             true,
             100,
-        );
+            StandardFileReader::new(),
+         );
 
         let result = provider.read_and_parse();
         assert!(result.is_err());
@@ -372,12 +384,13 @@ mod tests {
 
     #[test]
     fn test_read_nonexistent_optional_file() {
-        let provider = LingoFileProvider::new(
+        let provider = LingoFileProviderGeneric::new(
             "/nonexistent/config.toml",
             FileFormat::Toml,
             false,
-            100,
-        );
+             100,
+             StandardFileReader::new(),
+         );
 
         let result = provider.read_and_parse();
         assert!(result.is_ok());
@@ -395,12 +408,13 @@ mod tests {
         let mut temp_file = NamedTempFile::new()?;
         writeln!(temp_file, r#"{{"key": "value", "number": 42}}"#)?;
 
-        let provider = LingoFileProvider::new(
+        let provider = LingoFileProviderGeneric::new(
             temp_file.path(),
             FileFormat::Json,
             true,
-            100,
-        );
+             100,
+             StandardFileReader::new(),
+         );
 
         let result = provider.read_and_parse();
         assert!(result.is_ok());
@@ -413,11 +427,12 @@ mod tests {
         let mut temp_file = NamedTempFile::new()?;
         writeln!(temp_file, "key = \"value\"\nnumber = 42")?;
 
-        let provider = LingoFileProvider::new(
+        let provider = LingoFileProviderGeneric::new(
             temp_file.path(),
             FileFormat::Toml,
             true,
             100,
+            StandardFileReader,
         );
 
         let result = provider.read_and_parse();
@@ -431,11 +446,12 @@ mod tests {
         let mut temp_file = NamedTempFile::new()?;
         writeln!(temp_file, "[section]\nkey = value\nnumber = 42")?;
 
-        let provider = LingoFileProvider::new(
+        let provider = LingoFileProviderGeneric::new(
             temp_file.path(),
             FileFormat::Ini,
             true,
             100,
+            StandardFileReader,
         );
 
         let result = provider.read_and_parse();
@@ -446,12 +462,13 @@ mod tests {
 
     #[test]
     fn test_depth_limit_enforcement() {
-        let provider = LingoFileProvider::new(
+        let provider = LingoFileProviderGeneric::new(
             "/path/to/config.json",
             FileFormat::Json,
             true,
             2, // 很小的深度限制
-        );
+             StandardFileReader::new(),
+         );
 
         // 创建一个深度超过限制的 JSON 值
         let deep_json = serde_json::json!({

@@ -42,6 +42,14 @@ pub enum LingoError {
         path: PathBuf,
     },
 
+    /// 文件读取错误
+    #[error("Failed to read file {path}: {source}")]
+    FileReadError {
+        path: String,
+        #[source]
+        source: std::io::Error,
+    },
+
     /// 文件解析错误
     #[error("Failed to parse {format_name} file {path:?}: {source_error}")]
     FileParse {
