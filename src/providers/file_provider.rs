@@ -200,23 +200,61 @@ impl<R: FileReader> LingoFileProviderGeneric<R> {
         let mut root_map = Map::new();
 
         for (section_name, properties) in ini.iter() {
-            let section_name = section_name.unwrap_or("default");
-            let mut section_map = Map::new();
-
-            for (key, value) in properties.iter() {
-                section_map.insert(
-                    key.to_string(),
-                    Value::String(figment::value::Tag::Default, value.to_string()),
-                );
+            // 处理根级键和有名称的段落
+            match section_name {
+                None => {
+                    // 根级键（无段落），直接添加到根映射
+                    for (key, value) in properties.iter() {
+                        root_map.insert(
+                            key.to_string(),
+                            self.parse_ini_value(value),
+                        );
+                    }
+                }
+                Some(section_name) => {
+                    // 有名称的段落，创建嵌套映射
+                    let mut section_map = Map::new();
+                    for (key, value) in properties.iter() {
+                        section_map.insert(
+                            key.to_string(),
+                            self.parse_ini_value(value),
+                        );
+                    }
+                    root_map.insert(
+                        section_name.to_string(),
+                        Value::Dict(figment::value::Tag::Default, section_map),
+                    );
+                }
             }
-
-            root_map.insert(
-                section_name.to_string(),
-                Value::Dict(figment::value::Tag::Default, section_map),
-            );
         }
 
         Ok(Value::Dict(figment::value::Tag::Default, root_map))
+    }
+
+    /// 解析 INI 值，支持类型推断（布尔值、数值、字符串）
+    fn parse_ini_value(&self, value: &str) -> Value {
+        let tag = figment::value::Tag::Default;
+        
+        // 移除首尾空白
+        let value = value.trim();
+        
+        // 尝试解析布尔值
+        if let Ok(bool_val) = value.parse::<bool>() {
+            return Value::Bool(tag, bool_val);
+        }
+        
+        // 尝试解析整数
+        if let Ok(int_val) = value.parse::<i64>() {
+            return Value::Num(tag, figment::value::Num::I64(int_val));
+        }
+        
+        // 尝试解析浮点数
+        if let Ok(float_val) = value.parse::<f64>() {
+            return Value::Num(tag, figment::value::Num::F64(float_val));
+        }
+        
+        // 默认当作字符串
+        Value::String(tag, value.to_string())
     }
 
     /// 将 JsonValue 转换为 figment::Value

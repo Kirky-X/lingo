@@ -41,13 +41,20 @@ pub mod meta;
 pub mod paths;
 pub mod providers;
 
+#[cfg(test)]
+mod integration_tests;
+
 // Re-export main types
 pub use error::{ConfigDirType, LingoError};
 pub use meta::{ClapAttrsMeta, FieldMeta, LingoAppMeta, StructMeta};
 pub use paths::{add_specified_config_file, resolve_config_files, ConfigFilePath, ConfigFileType};
 
-// Re-export commonly used external types
+// 对外重导出 Serde 常用 traits
 pub use serde::{Deserialize, Serialize};
 
-// Re-export the Config derive macro from lingo-derive
+// 新增：对外重导出 figment 与 clap 常用类型，供 derive 宏下游直接使用
+pub use figment::Figment;
+pub use clap::{Arg, ArgAction, ArgMatches, Command};
+
+// 对外重导出 derive 宏
 pub use lingo_derive::Config;

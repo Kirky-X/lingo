@@ -89,17 +89,76 @@ impl LingoClapProvider {
                 .cloned()
                 .unwrap_or_else(|| arg_name.to_string());
 
-            // 尝试获取字符串值
-            if let Some(values) = self.get_arg_values(arg_name)? {
+            // 根据参数名称判断类型
+            let is_boolean_flag = matches!(arg_name, "verbose" | "quiet");
+            
+            if is_boolean_flag {
+                // 对于已知的布尔标志，直接使用 get_flag
+                if self.matches.get_flag(arg_name) {
+                    let figment_value = Value::Bool(figment::value::Tag::Default, true);
+                    self.insert_nested_value_direct(&mut args_map, &config_key, figment_value)?;
+                }
+            } else {
+                // 对于其他参数，尝试获取字符串值
+                let values = if let Some(values) = self.matches.get_many::<String>(arg_name) {
+                    values.map(|s| s.clone()).collect()
+                } else if let Some(value) = self.matches.get_one::<String>(arg_name) {
+                    vec![value.clone()]
+                } else {
+                    continue; // 没有值，跳过
+                };
+                
                 self.insert_nested_value(&mut args_map, &config_key, values)?;
-            } else if self.matches.get_flag(arg_name) {
-                // 如果没有字符串值但是布尔标志被设置，则作为布尔值处理
-                let figment_value = Value::Bool(figment::value::Tag::Default, true);
-                self.insert_nested_value_direct(&mut args_map, &config_key, figment_value)?;
             }
         }
 
         Ok(args_map)
+    }
+
+    /// 安全地检查某个参数是否作为布尔标志被设置
+    #[allow(dead_code)]
+    fn is_flag_set(&self, arg_name: &str) -> bool {
+        // 首先检查参数是否存在
+        let arg_exists = self.matches.ids().any(|id| id.as_str() == arg_name);
+        if !arg_exists {
+            return false;
+        }
+        
+        // 使用 catch_unwind 安全地检查参数是否为布尔标志
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            // 尝试获取布尔值，如果成功则说明是布尔标志
+            self.matches.get_flag(arg_name)
+        }));
+        
+        match result {
+            Ok(flag_value) => {
+                // 进一步验证：尝试获取字符串值，如果能获取到则不是布尔标志
+                let string_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    self.matches.get_one::<String>(arg_name).is_some() || 
+                    self.matches.get_many::<String>(arg_name).is_some()
+                }));
+                
+                match string_result {
+                    Ok(has_string_value) => {
+                        // 如果有字符串值，则不是布尔标志
+                        if has_string_value {
+                            false
+                        } else {
+                            // 没有字符串值且能获取布尔值，才是真正的布尔标志
+                            flag_value
+                        }
+                    },
+                    Err(_) => {
+                        // 获取字符串值失败，说明是布尔标志
+                        flag_value
+                    }
+                }
+            },
+            Err(_) => {
+                // 如果 get_flag 失败，则不是布尔标志
+                false
+            }
+        }
     }
 
     /// 获取参数值
@@ -108,50 +167,40 @@ impl LingoClapProvider {
     /// * `arg_name` - 参数名
     ///
     /// # Returns
-    /// 返回参数值列表，如果参数不存在则返回 None
+    /// 返回参数值列表，如果参数不存在则返回错误，如果参数是布尔标志则返回 None
+    #[allow(dead_code)]
     fn get_arg_values(&self, arg_name: &str) -> Result<Option<Vec<String>>, LingoError> {
-        // 使用 catch_unwind 来安全地检查参数并获取字符串值
-        // clap 在参数不存在或类型不匹配时都可能 panic
-        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            // 检查参数是否存在
-            if !self.matches.contains_id(arg_name) {
-                return Err("Unknown argument");
-            }
+        // 安全地检查参数是否存在，避免 clap 内部 panic
+        let arg_exists = self.matches.ids().any(|id| id.as_str() == arg_name);
+        if !arg_exists {
+            return Err(LingoError::Internal(format!("Argument '{}' not found", arg_name)));
+        }
 
+        // 首先检查是否为布尔标志，如果是则直接返回 None
+        if self.is_flag_set(arg_name) {
+            return Ok(None);
+        }
+
+        // 使用 catch_unwind 安全地尝试获取字符串值
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             // 尝试获取多个值
             if let Some(values) = self.matches.get_many::<String>(arg_name) {
-                let string_values: Vec<String> = values.cloned().collect();
-                return Ok(Some(string_values));
+                return Some(values.map(|s| s.clone()).collect());
             }
 
             // 尝试获取单个值
             if let Some(value) = self.matches.get_one::<String>(arg_name) {
-                return Ok(Some(vec![value.clone()]));
+                return Some(vec![value.clone()]);
             }
 
-            // 参数存在但没有字符串值
-            Ok(None)
+            None
         }));
 
         match result {
-            Ok(Ok(values)) => Ok(values),
-            Ok(Err(_)) => Err(LingoError::Internal(format!("Unknown argument: {}", arg_name))),
+            Ok(values) => Ok(values),
             Err(_) => {
-                // 如果发生 panic，可能是因为：
-                // 1. 参数不存在（contains_id panic）
-                // 2. 类型不匹配（get_one/get_many panic）
-                // 我们需要区分这两种情况
-
-                // 尝试一个更安全的方法来检查参数是否存在
-                // 通过检查所有已知的参数 ID
-                let arg_exists = self.matches.ids().any(|id| id.as_str() == arg_name);
-
-                if !arg_exists {
-                    Err(LingoError::Internal(format!("Unknown argument: {}", arg_name)))
-                } else {
-                    // 参数存在但类型不匹配（比如布尔标志），返回 None 让调用者通过其他方式处理
-                    Ok(None)
-                }
+                // 如果参数存在但没有字符串值（可能是布尔标志），返回 None
+                Ok(None)
             }
         }
     }
@@ -180,6 +229,16 @@ impl LingoClapProvider {
             return Ok(());
         }
 
+        // 对于其他情况，使用嵌套插入
+        self.try_insert_nested(map, &parts, value)
+    }
+    
+    fn try_insert_nested(
+        &self,
+        map: &mut Map<String, Value>,
+        parts: &[&str],
+        value: Value,
+    ) -> Result<(), LingoError> {
         // 处理嵌套键
         let mut current_map = map;
 
@@ -256,55 +315,8 @@ impl LingoClapProvider {
             Value::Array(figment::value::Tag::Default, array_values)
         };
 
-        // 如果只有一个部分，直接插入
-        if parts.len() == 1 {
-            map.insert(parts[0].to_string(), figment_value);
-            return Ok(());
-        }
-
-        // 处理嵌套键
-        let mut current_map = map;
-
-        // 遍历除最后一个部分外的所有部分
-        for part in &parts[..parts.len() - 1] {
-            let part_string = part.to_string();
-
-            // 如果键不存在，创建新的字典
-            if !current_map.contains_key(&part_string) {
-                current_map.insert(
-                    part_string.clone(),
-                    Value::Dict(figment::value::Tag::Default, Map::new()),
-                );
-            }
-
-            // 获取或创建嵌套字典
-            match current_map.get_mut(&part_string) {
-                Some(Value::Dict(_, nested_map)) => {
-                    current_map = nested_map;
-                }
-                Some(_) => {
-                    // 如果已存在的值不是字典，返回错误
-                    return Err(LingoError::Internal(
-                        format!(
-                            "Command line argument key conflict: '{}' cannot be both a value and a nested object",
-                            part
-                        )
-                    ));
-                }
-                None => {
-                    // 这种情况不应该发生，因为我们刚刚插入了值
-                    return Err(LingoError::Internal(
-                        "Unexpected error during nested key insertion".to_string()
-                    ));
-                }
-            }
-        }
-
-        // 插入最终值
-        let final_key = parts[parts.len() - 1].to_string();
-        current_map.insert(final_key, figment_value);
-
-        Ok(())
+        // 使用 insert_nested_value_direct 来处理flatten逻辑
+        self.insert_nested_value_direct(map, key, figment_value)
     }
 
     /// 解析命令行参数值
@@ -391,9 +403,9 @@ pub fn with_common_mappings(matches: ArgMatches) -> LingoClapProvider {
     LingoClapProvider::from_matches(matches)
         .map_arg("config", "config_file")
         .map_arg("config-dir", "config_dir")
-        .map_arg("log-level", "logging.level")
-        .map_arg("verbose", "logging.verbose")
-        .map_arg("quiet", "logging.quiet")
+        .map_arg("log-level", "log_level")
+        .map_arg("verbose", "verbose")
+        .map_arg("quiet", "quiet")
         .map_arg("output", "output.file")
         .map_arg("format", "output.format")
 }
@@ -723,7 +735,32 @@ mod tests {
 
         // 验证映射
         assert_eq!(provider.arg_mapping.get("config"), Some(&"config_file".to_string()));
-        assert_eq!(provider.arg_mapping.get("log-level"), Some(&"logging.level".to_string()));
+        assert_eq!(provider.arg_mapping.get("log-level"), Some(&"log_level".to_string()));
         assert_eq!(provider.arg_mapping.get("config-dir"), Some(&"config_dir".to_string()));
+    }
+
+    #[test]
+    fn test_flatten_fallback() {
+        let app = Command::new("test")
+            .arg(Arg::new("log-level").long("log-level").value_name("LEVEL"));
+
+        let matches = app.try_get_matches_from([
+            "test", "--log-level", "debug"
+        ]).unwrap();
+
+        let provider = with_common_mappings(matches);
+        let data = provider.data().unwrap();
+        let default_data = data.get(&Profile::Default).unwrap();
+        
+        // 打印所有键来调试
+        println!("Available keys: {:?}", default_data.keys().collect::<Vec<_>>());
+        
+        // 检查是否有 logging.level 或 log_level
+        if default_data.contains_key("logging.level") {
+            println!("Found logging.level");
+        }
+        if default_data.contains_key("log_level") {
+            println!("Found log_level");
+        }
     }
 }

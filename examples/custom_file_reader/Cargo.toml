@@ -1,0 +1,10 @@
+[package]
+name = "custom_file_reader"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+lingo = { path = "../.." }
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1.0", features = ["full"] }
+figment = { version = "0.10", features = ["toml", "json"] }

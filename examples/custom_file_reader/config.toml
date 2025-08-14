@@ -1,0 +1,18 @@
+[app]
+name = "Custom File Reader Example"
+version = "1.0.0"
+debug = true
+
+[database]
+host = "localhost"
+port = 5432
+username = "user"
+password = "password"
+database = "mydb"
+
+[features]
+enabled = ["cache", "logging", "metrics"]
+
+[cache]
+ttl = 3600
+max_size = 1024
