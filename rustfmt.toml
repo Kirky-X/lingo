@@ -1,4 +1,4 @@
-# Rustfmt configuration for lingo
+# Rustfmt configuration for quantum_config
 # This file codifies our formatting policy to ensure consistent style across the repository.
 # Keep this file in sync with CONTRIBUTING.md "代码风格细节（rustfmt）" section.
 
