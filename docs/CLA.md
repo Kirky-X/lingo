@@ -59,7 +59,7 @@
 
 如对本 CLA 有任何疑问，请通过以下方式联系项目维护者：
 - **GitHub Issues**：[lingo Issues](https://github.com/Kirky-X/lingo/issues)
-- **Email**：Kirky.X@outlook.com
+- **Email**：Kirky-X@outlook.com
 
 ---
 
