@@ -13,6 +13,16 @@ description = "A powerful and flexible configuration management library for Rust
 readme = "README.md"
 keywords = ["config", "configuration", "settings", "toml", "json"]
 categories = ["config", "development-tools"]
+exclude = [
+    ".idea/",
+    "DesignSpecification.md",
+    "target/",
+    "examples/*/target/",
+    "quantum_config_derive/target/",
+    "*.log",
+    ".DS_Store",
+    "Thumbs.db"
+]
 
 [dependencies]
 # Serialization
