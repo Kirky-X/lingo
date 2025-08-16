@@ -1,0 +1,12 @@
+D:\project\lingo\target\debug\deps\libproc_macro2-038584e8a80985c3.rmeta: D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\lib.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\marker.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\parse.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\rcvec.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\detection.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\fallback.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\extra.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\wrapper.rs
+
+D:\project\lingo\target\debug\deps\proc_macro2-038584e8a80985c3.d: D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\lib.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\marker.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\parse.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\rcvec.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\detection.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\fallback.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\extra.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\wrapper.rs
+
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\lib.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\marker.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\parse.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\rcvec.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\detection.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\fallback.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\extra.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\proc-macro2-1.0.95\src\wrapper.rs:

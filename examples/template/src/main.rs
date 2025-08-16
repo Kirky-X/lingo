@@ -184,6 +184,7 @@ pub struct WebhookAlertConfig {
 }
 
 #[derive(Config, Serialize, Deserialize, Debug, Clone)]
+#[config(env_prefix = "APP_")]
 pub struct TemplateConfig {
     /// Application configuration
     pub app: AppConfig,
@@ -212,7 +213,7 @@ impl Default for TemplateConfig {
         Self {
             app: AppConfig {
                 app_name: "Template Example App".to_string(),
-                app_version: "0.1.0".to_string(),
+                app_version: "0.2.0".to_string(),
                 environment: "development".to_string(),
             },
             server: ServerConfig {
@@ -318,7 +319,7 @@ impl TemplateGenerator {
         Self { config, output_dir }
     }
 
-    fn generate_config_template(&self) -> Result<(), Box<dyn std::error::Error>> {
+    fn generate_template(&self) -> Result<(), Box<dyn std::error::Error>> {
         fs::create_dir_all(&self.output_dir)?;
         let config_path = Path::new(&self.output_dir).join("config.toml");
         
@@ -872,7 +873,7 @@ spec:
     }
 
     fn generate_all(&self) -> Result<(), Box<dyn std::error::Error>> {
-        self.generate_config_template()?;
+        self.generate_template()?;
         self.generate_env_template()?;
         self.generate_docker_compose()?;
         self.generate_k8s_deployment()?;
@@ -912,7 +913,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if args.generate_all {
         generator.generate_all()?;
     } else if args.generate_config {
-        generator.generate_config_template()?;
+        generator.generate_template()?;
     } else if args.generate_env {
         generator.generate_env_template()?;
     } else if args.generate_docker {
@@ -950,4 +951,30 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("{} Template generation completed!", "[SUCCESS]".green());
     
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_template_config_default() {
+        let config = TemplateConfig::default();
+        assert!(config.app.app_name.len() > 0, "app name should have a default value");
+        assert!(config.server.port > 0, "server port should have a valid default value");
+        assert!(config.database.username.len() > 0, "database username should have a default value");
+    }
+
+    #[test]
+    fn test_config_serialization() {
+        let config = TemplateConfig::default();
+        let serialized = toml::to_string(&config).expect("Should be able to serialize config");
+        assert!(serialized.contains("app"), "Serialized config should contain app section");
+        assert!(serialized.contains("server"), "Serialized config should contain server section");
+        assert!(serialized.contains("database"), "Serialized config should contain database section");
+
+        let deserialized: TemplateConfig = toml::from_str(&serialized).expect("Should be able to deserialize config");
+        assert_eq!(deserialized.app.app_name, config.app.app_name);
+        assert_eq!(deserialized.server.port, config.server.port);
+    }
 }

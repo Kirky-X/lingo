@@ -20,6 +20,7 @@ use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[derive(Config, Serialize, Deserialize, Debug, Default)]
+#[config(env_prefix = "WEB_")]
 struct ServerConfig {
     /// 服务器基本配置
     server: HttpServerConfig,
@@ -210,6 +211,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     println!("正在加载服务器配置...");
     let config = ServerConfig::new();
 
+    // 在启动前进行基本边界检查（以警告为主，矛盾配置为错误）
+    validate_config(&config)?;
+
     // 初始化日志
     init_logging(&config.logging)?;
 
@@ -313,7 +317,7 @@ async fn info_handler() -> Json<ApiResponse<ServerInfo>> {
 
     let info = ServerInfo {
         name: "Lingo Web Server Example".to_string(),
-        version: "0.1.0".to_string(),
+        version: "0.2.0".to_string(),
         uptime: "N/A".to_string(), // 在实际应用中计算运行时间
         config_summary: ConfigSummary {
             host: config.server.host,
@@ -364,4 +368,113 @@ async fn docs_handler() -> Json<ApiResponse<HashMap<&'static str, &'static str>>
         data: Some(docs),
         message: "API documentation".to_string(),
     })
+}
+
+fn validate_config(config: &ServerConfig) -> Result<(), Box<dyn Error>> {
+    // Server 基本参数：以警告为主
+    if config.server.port == 0 {
+        eprintln!("警告: 服务器端口为 0，系统将自动分配端口");
+    }
+    if config.server.workers == 0 {
+        eprintln!("警告: 工作线程数为 0，服务器可能无法处理请求");
+    }
+    if config.server.timeout == 0 {
+        eprintln!("警告: 请求超时为 0，可能导致立即超时");
+    }
+    if config.server.max_body_size == 0 {
+        eprintln!("警告: 最大请求体大小为 0，将无法接收任何请求体");
+    }
+
+    // TLS 配置：矛盾为错误
+    if config.tls.enabled.unwrap_or(false) {
+        if config.tls.cert_file.as_deref().unwrap_or("").is_empty()
+            || config.tls.key_file.as_deref().unwrap_or("").is_empty()
+        {
+            return Err("TLS 已启用但证书或私钥路径为空".into());
+        }
+        // 最低版本仅做提示
+        let v = config.tls.min_version.trim();
+        if v != "1.2" && v != "1.3" {
+            eprintln!("警告: TLS 最低版本为 {}，建议使用 1.2 或 1.3", v);
+        }
+    } else {
+        // 未启用 TLS 但提供了证书/私钥：警告
+        if config.tls.cert_file.is_some() || config.tls.key_file.is_some() {
+            eprintln!("警告: TLS 未启用但提供了证书/私钥路径，这些配置将被忽略");
+        }
+    }
+
+    // CORS 配置：温和警告
+    if config.cors.enabled {
+        if config.cors.allowed_origins.trim().is_empty() {
+            eprintln!("警告: CORS 启用但 allowed_origins 为空，可能导致所有请求被拒绝");
+        }
+        if config.cors.max_age == 0 {
+            eprintln!("警告: CORS max_age 为 0，将不进行预检缓存");
+        }
+    }
+
+    // 日志配置：建议
+    match config.logging.level.as_str() {
+        "trace" | "debug" | "info" | "warn" | "error" => {},
+        other => eprintln!("警告: 未知日志级别 '{}', 将回退到默认过滤器策略", other),
+    }
+    match config.logging.format.as_str() {
+        "json" | "pretty" => {},
+        other => eprintln!("警告: 未知日志格式 '{}', 将使用 pretty", other),
+    }
+
+    // API 配置：基本校验
+    if !config.api.prefix.starts_with('/') {
+        eprintln!("警告: API 前缀未以 '/' 开头，当前为: {}", config.api.prefix);
+    }
+    if config.api.rate_limit == 0 {
+        eprintln!("警告: 速率限制为 0，将不进行限流");
+    }
+
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_server_config_new() {
+        let config = ServerConfig::new();
+        assert!(config.server.host.len() > 0, "server host should have a default value");
+        assert!(config.server.port > 0, "server port should have a valid default value");
+        assert!(config.logging.level.len() > 0, "log level should have a default value");
+    }
+
+    #[test]
+    fn test_server_config_default() {
+        let config = ServerConfig::default();
+        assert_eq!(config.server.host, "127.0.0.1");
+        assert_eq!(config.server.port, 8080);
+        assert_eq!(config.logging.level, "info");
+    }
+
+    #[test]
+    fn test_logging_and_cors_defaults() {
+        let logging = LoggingConfig::default();
+        assert!(logging.format.len() > 0);
+        
+        let cors = CorsConfig::default();
+        // 原断言为 len() >= 0，恒为真；改为检查字符串非空和 max_age 合理范围
+        assert!(!cors.allowed_origins.is_empty(), "allowed_origins should not be empty by default");
+        assert!(cors.max_age > 0 && cors.max_age <= 86400, "max_age should be within a reasonable default range");
+    }
+
+    #[test]
+    fn test_validate_config_tls_contradiction() {
+        let cfg = ServerConfig {
+            server: HttpServerConfig::default(),
+            tls: TlsConfig { enabled: Some(true), cert_file: None, key_file: None, min_version: "1.2".into() },
+            cors: CorsConfig::default(),
+            logging: LoggingConfig::default(),
+            api: ApiConfig::default(),
+        };
+        assert!(validate_config(&cfg).is_err(), "TLS 启用但缺少证书/私钥应报错");
+    }
 }

@@ -3,7 +3,7 @@
 
 # 应用程序基本信息
 name = "Async Configuration Example"
-version = "0.1.0"
+version = "0.2.0"
 debug = true
 port = 8080
 max_connections = 1000
@@ -19,7 +19,7 @@ base_url = "https://api.example.com"
 timeout = 30
 max_retries = 3
 retry_interval = 1000
-user_agent = "AsyncExample/0.1.0"
+user_agent = "AsyncExample/0.2.0"
 compression = true
 
 # 任务调度器配置

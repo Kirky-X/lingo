@@ -1,0 +1,7 @@
+D:\project\lingo\target\debug\deps\libwindows_targets-832063ff1bd69dfe.rmeta: D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\windows-targets-0.52.6\src\lib.rs
+
+D:\project\lingo\target\debug\deps\libwindows_targets-832063ff1bd69dfe.rlib: D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\windows-targets-0.52.6\src\lib.rs
+
+D:\project\lingo\target\debug\deps\windows_targets-832063ff1bd69dfe.d: D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\windows-targets-0.52.6\src\lib.rs
+
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\windows-targets-0.52.6\src\lib.rs:

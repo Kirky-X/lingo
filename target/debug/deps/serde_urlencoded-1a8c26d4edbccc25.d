@@ -1,0 +1,11 @@
+D:\project\lingo\target\debug\deps\libserde_urlencoded-1a8c26d4edbccc25.rmeta: D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\lib.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\de.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\ser\mod.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\ser\key.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\ser\pair.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\ser\part.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\ser\value.rs
+
+D:\project\lingo\target\debug\deps\serde_urlencoded-1a8c26d4edbccc25.d: D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\lib.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\de.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\ser\mod.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\ser\key.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\ser\pair.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\ser\part.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\ser\value.rs
+
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\lib.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\de.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\ser\mod.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\ser\key.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\ser\pair.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\ser\part.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_urlencoded-0.7.1\src\ser\value.rs:

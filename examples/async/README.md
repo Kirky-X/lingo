@@ -11,6 +11,28 @@
 - **配置广播**: 使用 broadcast channel 分发配置变更
 - **异步任务协调**: 协调多个长时间运行的异步任务
 
+## Configuration Validation
+
+This async example implements configuration validation to ensure all service configurations are consistent and sensible:
+
+### Validation Features
+
+**Warning-level validations**:
+- Zero connection pool configurations (`max_connections = 0`)
+- Very short timeout values (request timeout < 100ms)
+- Empty or overly permissive cache configurations
+- Disabled metrics collection in production
+- Scheduler disabled when required
+
+The validation approach uses warnings rather than errors for most issues to allow the application to start with sub-optimal but functional configurations, providing clear guidance for production deployment.
+
+Example validation output:
+```
+Warning: max_connections is 0, which may cause connection issues
+Warning: request_timeout of 50ms is very short and may cause timeouts
+Warning: metrics collection is disabled - consider enabling for production monitoring
+```
+
 ## 配置结构
 
 ```rust

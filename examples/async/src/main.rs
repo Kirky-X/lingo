@@ -81,6 +81,7 @@ struct MetricsConfig {
 
 /// 异步应用配置
 #[derive(Config, Serialize, Deserialize, Debug, Clone)]
+#[config(env_prefix = "ASYNC_")]
 struct AsyncAppConfig {
     /// 应用程序名称
     name: String,
@@ -114,18 +115,18 @@ impl Default for AsyncAppConfig {
     fn default() -> Self {
         Self {
             name: "Async Configuration Example".to_string(),
-            version: "0.1.0".to_string(),
-            debug: true,
+            version: "1.0.0".to_string(),
+            debug: false,
             port: 8080,
             max_connections: 1000,
             request_timeout: 30,
             
             http_client: HttpClientConfig {
-                base_url: "https://api.example.com".to_string(),
+                base_url: "http://127.0.0.1".to_string(),
                 timeout: 30,
                 max_retries: 3,
                 retry_interval: 1000,
-                user_agent: "AsyncExample/0.1.0".to_string(),
+                user_agent: "lingo-async-example".to_string(),
                 compression: true,
             },
             
@@ -134,26 +135,26 @@ impl Default for AsyncAppConfig {
                 worker_threads: 4,
                 queue_size: 1000,
                 task_timeout: 300,
-                cleanup_interval: 60,
+                cleanup_interval: 3600,
             },
             
             cache: CacheConfig {
                 enabled: true,
                 cache_type: "memory".to_string(),
-                default_ttl: 3600,
+                default_ttl: 300,
                 max_entries: 10000,
-                cleanup_interval: 300,
+                cleanup_interval: 60,
             },
             
             metrics: MetricsConfig {
                 enabled: true,
-                endpoint: "http://localhost:9090/metrics".to_string(),
-                collection_interval: 10,
+                endpoint: "/metrics".to_string(),
+                collection_interval: 60,
                 batch_size: 100,
                 buffer_size: 1000,
             },
             
-            config_reload_interval: 30,
+            config_reload_interval: 300,
             hot_reload: true,
         }
     }
@@ -541,12 +542,70 @@ impl AsyncApp {
     }
 }
 
+/// 验证配置合理性并提供警告
+fn validate_config(config: &AsyncAppConfig) {
+    // 端口边界检查
+    if config.port == 0 {
+        eprintln!("警告: 端口设置为 0，系统将自动分配随机端口");
+    }
+    
+    // HTTP客户端配置检查
+    if config.http_client.timeout == 0 {
+        eprintln!("警告: HTTP客户端超时设置为 0，可能导致请求立即超时");
+    }
+    if config.http_client.max_retries == 0 {
+        eprintln!("警告: HTTP客户端最大重试次数为 0，失败请求不会重试");
+    }
+    
+    // 调度器配置检查
+    if config.scheduler.enabled && config.scheduler.worker_threads == 0 {
+        eprintln!("警告: 调度器已启用但工作线程数为 0，任务无法执行");
+    }
+    if config.scheduler.enabled && config.scheduler.queue_size == 0 {
+        eprintln!("警告: 调度器已启用但队列大小为 0，可能导致任务丢失");
+    }
+    
+    // 缓存配置检查
+    if config.cache.enabled && config.cache.max_entries == 0 {
+        eprintln!("警告: 缓存已启用但最大条目数为 0，缓存将无法存储数据");
+    }
+    if config.cache.enabled && config.cache.default_ttl == 0 {
+        eprintln!("警告: 缓存已启用但默认TTL为 0，缓存项将立即过期");
+    }
+    
+    // 指标配置检查
+    if config.metrics.enabled && config.metrics.collection_interval == 0 {
+        eprintln!("警告: 指标收集已启用但收集间隔为 0，可能导致性能问题");
+    }
+    if config.metrics.enabled && config.metrics.batch_size == 0 {
+        eprintln!("警告: 指标收集已启用但批次大小为 0，指标无法发送");
+    }
+    
+    // 字符串配置检查
+    if config.name.is_empty() {
+        eprintln!("警告: 应用名称为空，可能影响日志和监控");
+    }
+    if config.http_client.base_url.is_empty() {
+        eprintln!("警告: HTTP客户端基础URL为空，请求可能失败");
+    }
+    if config.cache.cache_type.is_empty() {
+        eprintln!("警告: 缓存类型为空，可能导致缓存初始化失败");
+    }
+    if config.metrics.endpoint.is_empty() {
+        eprintln!("警告: 指标端点为空，指标数据无法发送");
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     println!("=== Lingo 异步配置加载示例 ===\n");
     
     // 创建并启动异步应用
     let app = AsyncApp::new().await;
+    
+    // 验证配置并显示警告
+    let config = app.config_manager.get_config().await;
+    validate_config(&config);
     
     // 显示配置信息
     let config = app.config_manager.get_config().await;
@@ -611,4 +670,274 @@ async fn main() -> Result<(), Box<dyn Error>> {
     println!("\n[SUCCESS] 异步配置示例运行完成！");
     
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    // 删除未使用的导入以消除警告
+    // use std::time::Duration;
+
+    #[test]
+    fn test_async_app_config_new() {
+        // Test that we can create an AsyncAppConfig using new()
+        let config = AsyncAppConfig::new();
+        assert!(config.name.len() > 0, "name should have a default value");
+        assert!(config.port > 0, "port should have a valid default value");
+    }
+
+    #[test]
+    fn test_async_app_config_default() {
+        // Test that we can create an AsyncAppConfig using Default
+        let config = AsyncAppConfig::default();
+        assert_eq!(config.name, "Async Configuration Example");
+        assert_eq!(config.version, "1.0.0");
+        assert!(config.port > 0);
+    }
+
+    #[test]
+    fn test_config_serialization() {
+        // Test that the config can be serialized and deserialized
+        let config = AsyncAppConfig::default();
+        let serialized = toml::to_string(&config).expect("Should be able to serialize config");
+        assert!(serialized.contains("name"), "Serialized config should contain name");
+        assert!(serialized.contains("version"), "Serialized config should contain version");
+
+        // Test deserialization
+        let deserialized: AsyncAppConfig = toml::from_str(&serialized).expect("Should be able to deserialize config");
+        assert_eq!(deserialized.name, config.name);
+        assert_eq!(deserialized.version, config.version);
+        assert_eq!(deserialized.port, config.port);
+    }
+
+    #[tokio::test]
+    async fn test_config_manager_creation() {
+        // Test that we can create a ConfigManager
+        let config_manager = Arc::new(ConfigManager::new());
+        
+        // Verify we can get current config
+        let current_config = config_manager.get_config().await;
+        assert_eq!(current_config.name, "Async Configuration Example");
+    }
+
+    #[test]
+    fn test_service_configs() {
+        // Test that individual service configs can be created
+        let config = AsyncAppConfig::default();
+        
+        // Test that we can create services with the config
+        let _http_client = HttpClientService::new(config.http_client.clone());
+        let _scheduler = SchedulerService::new(config.scheduler.clone());
+        let _cache = CacheService::new(config.cache.clone());
+        let _metrics = MetricsService::new(config.metrics.clone());
+        
+        // If we get here without panicking, the configs are valid
+    }
+
+    #[test]
+    fn test_zero_port_boundary() {
+        // Test handling of zero port values
+        let mut config = AsyncAppConfig::default();
+        config.port = 0;
+        
+        // Zero port should be detectable
+        assert_eq!(config.port, 0, "port should accept zero value");
+        
+        // Should still be serializable with zero port
+        let serialized = toml::to_string(&config).expect("Should serialize config with zero port");
+        let deserialized: AsyncAppConfig = toml::from_str(&serialized).expect("Should deserialize config with zero port");
+        assert_eq!(deserialized.port, 0);
+    }
+
+    #[test]
+    fn test_zero_timeout_configurations() {
+        // Test zero timeout values for different services
+        let mut config = AsyncAppConfig::default();
+        
+        config.request_timeout = 0;
+        config.http_client.timeout = 0;
+        config.scheduler.task_timeout = 0;
+        config.cache.default_ttl = 0;
+        
+        // Zero timeouts should be handled gracefully
+        assert_eq!(config.request_timeout, 0, "request_timeout should accept zero");
+        assert_eq!(config.http_client.timeout, 0, "http_client timeout should accept zero");
+        assert_eq!(config.scheduler.task_timeout, 0, "scheduler timeout should accept zero");
+        assert_eq!(config.cache.default_ttl, 0, "cache TTL should accept zero");
+        
+        // Services should still be constructible with zero timeouts
+        let _http_client = HttpClientService::new(config.http_client.clone());
+        let _scheduler = SchedulerService::new(config.scheduler.clone());
+        let _cache = CacheService::new(config.cache.clone());
+    }
+
+    #[test]
+    fn test_zero_worker_threads_boundary() {
+        // Test zero worker threads configuration
+        let mut config = AsyncAppConfig::default();
+        config.scheduler.worker_threads = 0;
+        
+        assert_eq!(config.scheduler.worker_threads, 0, "worker_threads should accept zero");
+        
+        // Scheduler should handle zero worker threads gracefully
+        let scheduler = SchedulerService::new(config.scheduler.clone());
+        assert_eq!(scheduler.config.worker_threads, 0);
+    }
+
+    #[test]
+    fn test_zero_queue_size_boundary() {
+        // Test zero queue size configuration
+        let mut config = AsyncAppConfig::default();
+        config.scheduler.queue_size = 0;
+        
+        assert_eq!(config.scheduler.queue_size, 0, "queue_size should accept zero");
+        
+        // Should be serializable with zero queue size
+        let serialized = toml::to_string(&config).expect("Should serialize with zero queue size");
+        let deserialized: AsyncAppConfig = toml::from_str(&serialized).expect("Should deserialize with zero queue size");
+        assert_eq!(deserialized.scheduler.queue_size, 0);
+    }
+
+    #[test]
+    fn test_max_value_boundaries() {
+        // Test maximum value configurations - using TOML-safe maximum values
+        let mut config = AsyncAppConfig::default();
+        
+        config.port = u16::MAX; // This is safe for TOML
+        config.max_connections = 1000000; // Large but TOML-safe value
+        config.request_timeout = 3600000; // 1 hour in milliseconds, safe for TOML
+        config.http_client.max_retries = u32::MAX; // This is safe for TOML
+        config.scheduler.worker_threads = 1000; // Large but reasonable value
+        config.cache.max_entries = 1000000; // Large but TOML-safe value
+        config.metrics.batch_size = 100000; // Large but reasonable value
+        
+        // All maximum values should be acceptable
+        assert_eq!(config.port, u16::MAX);
+        assert_eq!(config.max_connections, 1000000);
+        assert_eq!(config.request_timeout, 3600000);
+        assert_eq!(config.http_client.max_retries, u32::MAX);
+        assert_eq!(config.scheduler.worker_threads, 1000);
+        assert_eq!(config.cache.max_entries, 1000000);
+        assert_eq!(config.metrics.batch_size, 100000);
+        
+        // Services should handle maximum values
+        let _http_client = HttpClientService::new(config.http_client.clone());
+        let _scheduler = SchedulerService::new(config.scheduler.clone());
+        let _cache = CacheService::new(config.cache.clone());
+        let _metrics = MetricsService::new(config.metrics.clone());
+    }
+
+    #[test]
+    fn test_empty_string_configurations() {
+        // Test empty string configurations
+        let mut config = AsyncAppConfig::default();
+        
+        config.name = String::new();
+        config.version = String::new();
+        config.http_client.base_url = String::new();
+        config.http_client.user_agent = String::new();
+        config.cache.cache_type = String::new();
+        config.metrics.endpoint = String::new();
+        
+        // Empty strings should be accepted
+        assert!(config.name.is_empty());
+        assert!(config.version.is_empty());
+        assert!(config.http_client.base_url.is_empty());
+        assert!(config.http_client.user_agent.is_empty());
+        assert!(config.cache.cache_type.is_empty());
+        assert!(config.metrics.endpoint.is_empty());
+        
+        // Should still be serializable with empty strings
+        let serialized = toml::to_string(&config).expect("Should serialize with empty strings");
+        let deserialized: AsyncAppConfig = toml::from_str(&serialized).expect("Should deserialize with empty strings");
+        assert!(deserialized.name.is_empty());
+        assert!(deserialized.version.is_empty());
+    }
+
+    #[test]
+    fn test_disabled_services_configuration() {
+        // Test all services disabled
+        let mut config = AsyncAppConfig::default();
+        
+        config.scheduler.enabled = false;
+        config.cache.enabled = false;
+        config.metrics.enabled = false;
+        config.hot_reload = false;
+        
+        // Disabled services should still be constructible
+        let _scheduler = SchedulerService::new(config.scheduler.clone());
+        let _cache = CacheService::new(config.cache.clone());
+        let _metrics = MetricsService::new(config.metrics.clone());
+        
+        // Configuration should serialize/deserialize correctly
+        let serialized = toml::to_string(&config).expect("Should serialize disabled services");
+        let deserialized: AsyncAppConfig = toml::from_str(&serialized).expect("Should deserialize disabled services");
+        assert!(!deserialized.scheduler.enabled);
+        assert!(!deserialized.cache.enabled);
+        assert!(!deserialized.metrics.enabled);
+        assert!(!deserialized.hot_reload);
+    }
+
+    #[tokio::test]
+    async fn test_config_manager_update_boundary() {
+        // Test config manager with boundary value updates
+        let config_manager = Arc::new(ConfigManager::new());
+        
+        let mut new_config = AsyncAppConfig::default();
+        new_config.port = 0;
+        new_config.max_connections = 0;
+        new_config.request_timeout = 3600000; // Large but TOML-safe value
+        
+        // Should be able to update with boundary values
+        config_manager.update_config(new_config.clone()).await;
+        
+        let updated_config = config_manager.get_config().await;
+        assert_eq!(updated_config.port, 0);
+        assert_eq!(updated_config.max_connections, 0);
+        assert_eq!(updated_config.request_timeout, 3600000);
+    }
+
+    #[test]
+    fn test_serialization_roundtrip_with_boundaries() {
+        // Test serialization roundtrip with boundary values - using TOML-safe values
+        let mut config = AsyncAppConfig::default();
+        
+        // Set various boundary values that are safe for TOML serialization
+        config.port = 0;
+        config.max_connections = 1000000; // Large but TOML-safe
+        config.request_timeout = 0;
+        config.http_client.timeout = 3600000; // Large but TOML-safe
+        config.scheduler.worker_threads = 0;
+        config.cache.max_entries = 1000000; // Large but TOML-safe
+        config.name = String::new();
+        config.scheduler.enabled = false;
+        
+        // Serialize and deserialize
+        let serialized = toml::to_string(&config).expect("Should serialize boundary config");
+        let deserialized: AsyncAppConfig = toml::from_str(&serialized).expect("Should deserialize boundary config");
+        
+        // Verify all boundary values preserved
+        assert_eq!(deserialized.port, 0);
+        assert_eq!(deserialized.max_connections, 1000000);
+        assert_eq!(deserialized.request_timeout, 0);
+        assert_eq!(deserialized.http_client.timeout, 3600000);
+        assert_eq!(deserialized.scheduler.worker_threads, 0);
+        assert_eq!(deserialized.cache.max_entries, 1000000);
+        assert!(deserialized.name.is_empty());
+        assert!(!deserialized.scheduler.enabled);
+    }
+
+    #[test]
+    fn test_invalid_toml_handling() {
+        // Test handling of malformed TOML
+        let invalid_toml = r#"
+        name = "Test"
+        port = "not_a_number"
+        debug = 123
+        "#;
+        
+        // Should fail gracefully with invalid TOML
+        let result = toml::from_str::<AsyncAppConfig>(invalid_toml);
+        assert!(result.is_err(), "Should fail to parse invalid TOML");
+    }
 }

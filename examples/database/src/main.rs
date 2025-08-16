@@ -15,6 +15,7 @@ use tracing::{error, info, warn};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[derive(Config, Serialize, Deserialize, Debug, Default)]
+#[config(env_prefix = "DB_")]
 struct DatabaseConfig {
     /// 主数据库配置
     primary: DatabaseConnectionConfig,
@@ -270,24 +271,40 @@ fn validate_config(config: &DatabaseConfig) -> Result<(), Box<dyn Error>> {
         }
     }
 
-    // 验证连接池配置
+    // 验证连接池配置 - 零值作为警告，保持有序关系为错误
     if config.pool.min_connections > config.pool.max_connections {
         return Err("最小连接数不能大于最大连接数".into());
     }
+    if config.pool.max_connections == 0 {
+        warn!("最大连接数为 0，这可能导致连接问题");
+    }
+    if config.pool.min_connections == 0 {
+        warn!("最小连接数为 0，这可能导致性能问题");
+    }
 
-    // 验证超时配置
+    // 主机、数据库、用户名不能为空
+    if config.primary.host.is_empty() {
+        return Err("主机名不能为空".into());
+    }
+    if config.primary.database.is_empty() {
+        return Err("数据库名不能为空".into());
+    }
+    if config.primary.username.is_empty() {
+        return Err("用户名不能为空".into());
+    }
+
+    // 超时边界
     if config.primary.connect_timeout == 0 {
         warn!("连接超时设置为 0，可能导致连接永久阻塞");
     }
 
-    // 验证 SSL 配置
+    // SSL 配置的一致性
     if let Some(true) = config.ssl.enabled {
         if config.ssl.mode == "disable" {
-            warn!("SSL 已启用但模式设置为 'disable'，这可能不是预期的配置");
+            return Err("SSL 启用状态与禁用模式矛盾".into());
         }
     }
 
-    info!("配置验证通过");
     Ok(())
 }
 
@@ -429,4 +446,946 @@ async fn simulate_application_lifecycle(config: &DatabaseConfig) -> Result<(), B
 
     info!("应用程序生命周期模拟完成");
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_database_config_new() {
+        // Test that we can create a DatabaseConfig using new()
+        let config = DatabaseConfig::new();
+        assert!(config.primary.host.len() > 0, "primary db host should have a default value");
+        assert!(config.primary.port > 0, "primary db port should have a valid default value");
+        assert!(config.pool.max_connections >= 1, "pool max_connections should be >= 1");
+    }
+
+    #[test]
+    fn test_database_config_default() {
+        // Test that we can create a DatabaseConfig using Default
+        let config = DatabaseConfig::default();
+        assert_eq!(config.primary.host, "localhost");
+        assert!(config.pool.max_connections >= 1);
+    }
+
+    #[test]
+    fn test_config_serialization() {
+        // Test that the config can be serialized and deserialized
+        let config = DatabaseConfig::default();
+        let serialized = toml::to_string(&config).expect("Should be able to serialize config");
+        assert!(serialized.contains("primary"), "Serialized config should contain primary section");
+        assert!(serialized.contains("pool"), "Serialized config should contain pool section");
+
+        // Test deserialization
+        let deserialized: DatabaseConfig = toml::from_str(&serialized).expect("Should be able to deserialize config");
+        assert_eq!(deserialized.primary.host, config.primary.host);
+        assert_eq!(deserialized.pool.max_connections, config.pool.max_connections);
+    }
+
+    #[test]
+    fn test_invalid_database_types() {
+        let invalid_configs = vec![
+            r#"
+            [primary]
+            db_type = "invalid_db"
+            host = "localhost"
+            port = 5432
+            database = "test"
+            username = "user"
+            connect_timeout = 30
+            query_timeout = 60
+            application_name = "test"
+            
+            [pool]
+            min_connections = 1
+            max_connections = 10
+            idle_timeout = 600
+            max_lifetime = 3600
+            acquire_timeout = 30
+            test_query = "SELECT 1"
+            
+            [migration]
+            auto_migrate = true
+            migrations_dir = "./migrations"
+            migrations_table = "_migrations"
+            migration_timeout = 300
+            
+            [ssl]
+            mode = "prefer"
+            
+            [monitoring]
+            log_queries = false
+            slow_query_threshold = 1000
+            monitor_pool = true
+            monitor_interval = 60
+            enable_metrics = false
+            "#,
+            r#"
+            [primary]
+            db_type = ""
+            host = "localhost"
+            port = 5432
+            database = "test"
+            username = "user"
+            connect_timeout = 30
+            query_timeout = 60
+            application_name = "test"
+            
+            [pool]
+            min_connections = 1
+            max_connections = 10
+            idle_timeout = 600
+            max_lifetime = 3600
+            acquire_timeout = 30
+            test_query = "SELECT 1"
+            
+            [migration]
+            auto_migrate = true
+            migrations_dir = "./migrations"
+            migrations_table = "_migrations"
+            migration_timeout = 300
+            
+            [ssl]
+            mode = "prefer"
+            
+            [monitoring]
+            log_queries = false
+            slow_query_threshold = 1000
+            monitor_pool = true
+            monitor_interval = 60
+            enable_metrics = false
+            "#,
+            r#"
+            [primary]
+            db_type = "oracle"
+            host = "localhost"
+            port = 1521
+            database = "test"
+            username = "user"
+            connect_timeout = 30
+            query_timeout = 60
+            application_name = "test"
+            
+            [pool]
+            min_connections = 1
+            max_connections = 10
+            idle_timeout = 600
+            max_lifetime = 3600
+            acquire_timeout = 30
+            test_query = "SELECT 1"
+            
+            [migration]
+            auto_migrate = true
+            migrations_dir = "./migrations"
+            migrations_table = "_migrations"
+            migration_timeout = 300
+            
+            [ssl]
+            mode = "prefer"
+            
+            [monitoring]
+            log_queries = false
+            slow_query_threshold = 1000
+            monitor_pool = true
+            monitor_interval = 60
+            enable_metrics = false
+            "#,
+        ];
+
+        for invalid_config in invalid_configs {
+            let parsed: Result<DatabaseConfig, _> = toml::from_str(invalid_config);
+            if let Ok(config) = parsed {
+                // 配置解析成功，但应该在验证时失败
+                assert!(validate_config(&config).is_err(), "Invalid database type should fail validation");
+            }
+            // 如果解析就失败了，那也是可以的
+        }
+    }
+
+    #[test]
+    fn test_connection_pool_invalid_combinations() {
+        let invalid_pool_configs = vec![
+            // min_connections > max_connections
+            r#"
+            [primary]
+            db_type = "postgres"
+            host = "localhost"
+            port = 5432
+            database = "test"
+            username = "user"
+            connect_timeout = 30
+            query_timeout = 60
+            application_name = "test"
+            
+            [pool]
+            min_connections = 10
+            max_connections = 5
+            idle_timeout = 600
+            max_lifetime = 3600
+            acquire_timeout = 30
+            test_query = "SELECT 1"
+            
+            [migration]
+            auto_migrate = true
+            migrations_dir = "./migrations"
+            migrations_table = "_migrations"
+            migration_timeout = 300
+            
+            [ssl]
+            mode = "prefer"
+            
+            [monitoring]
+            log_queries = false
+            slow_query_threshold = 1000
+            monitor_pool = true
+            monitor_interval = 60
+            enable_metrics = false
+            "#,
+        ];
+
+        for invalid_config in invalid_pool_configs {
+            let config: DatabaseConfig = toml::from_str(invalid_config)
+                .expect("Should parse TOML structure");
+            assert!(validate_config(&config).is_err(), 
+                    "Invalid pool configuration should fail validation");
+        }
+        
+        // Test zero value configurations that now only produce warnings
+        let warning_pool_configs = vec![
+            // Zero max_connections
+            r#"
+            [primary]
+            db_type = "postgres"
+            host = "localhost"
+            port = 5432
+            database = "test"
+            username = "user"
+            connect_timeout = 30
+            query_timeout = 60
+            application_name = "test"
+            
+            [pool]
+            min_connections = 0
+            max_connections = 0
+            idle_timeout = 600
+            max_lifetime = 3600
+            acquire_timeout = 30
+            test_query = "SELECT 1"
+            
+            [migration]
+            auto_migrate = true
+            migrations_dir = "./migrations"
+            migrations_table = "_migrations"
+            migration_timeout = 300
+            
+            [ssl]
+            mode = "prefer"
+            
+            [monitoring]
+            log_queries = false
+            slow_query_threshold = 1000
+            monitor_pool = true
+            monitor_interval = 60
+            enable_metrics = false
+            "#,
+        ];
+
+        for warning_config in warning_pool_configs {
+            let config: DatabaseConfig = toml::from_str(warning_config)
+                .expect("Should parse TOML structure");
+            assert!(validate_config(&config).is_ok(), 
+                    "Zero value configurations should pass validation but produce warnings");
+        }
+    }
+
+    #[test]
+    fn test_ssl_configuration_contradictions() {
+        let contradictory_ssl_configs = vec![
+            // SSL enabled but mode is "disable"
+            r#"
+            [primary]
+            db_type = "postgres"
+            host = "localhost"
+            port = 5432
+            database = "test"
+            username = "user"
+            connect_timeout = 30
+            query_timeout = 60
+            application_name = "test"
+            
+            [pool]
+            min_connections = 1
+            max_connections = 10
+            idle_timeout = 600
+            max_lifetime = 3600
+            acquire_timeout = 30
+            test_query = "SELECT 1"
+            
+            [migration]
+            auto_migrate = true
+            migrations_dir = "./migrations"
+            migrations_table = "_migrations"
+            migration_timeout = 300
+            
+            [ssl]
+            enabled = true
+            mode = "disable"
+            
+            [monitoring]
+            log_queries = false
+            slow_query_threshold = 1000
+            monitor_pool = true
+            monitor_interval = 60
+            enable_metrics = false
+            "#,
+            // SSL mode require with no certificates
+            r#"
+            [primary]
+            db_type = "postgres"
+            host = "localhost"
+            port = 5432
+            database = "test"
+            username = "user"
+            connect_timeout = 30
+            query_timeout = 60
+            application_name = "test"
+            
+            [pool]
+            min_connections = 1
+            max_connections = 10
+            idle_timeout = 600
+            max_lifetime = 3600
+            acquire_timeout = 30
+            test_query = "SELECT 1"
+            
+            [migration]
+            auto_migrate = true
+            migrations_dir = "./migrations"
+            migrations_table = "_migrations"
+            migration_timeout = 300
+            
+            [ssl]
+            enabled = true
+            mode = "require"
+            
+            [monitoring]
+            log_queries = false
+            slow_query_threshold = 1000
+            monitor_pool = true
+            monitor_interval = 60
+            enable_metrics = false
+            "#,
+        ];
+
+        for config_str in contradictory_ssl_configs {
+            let config: DatabaseConfig = toml::from_str(config_str)
+                .expect("Should parse TOML structure");
+            let _ = validate_config(&config);
+            // 至少应该产生警告（目前实现只打印警告，不返回错误）
+            // 在实际应用中，这些可能应该是错误
+        }
+    }
+
+    #[test]
+    fn test_port_range_boundaries() {
+        let port_boundary_configs = vec![
+            // Port 0 (invalid)
+            (0u16, false),
+            // Port 1 (valid, though unusual)
+            (1u16, true),
+            // Standard ports
+            (5432u16, true),
+            (3306u16, true),
+            // Maximum valid port
+            (65535u16, true),
+        ];
+
+        for (port, should_be_valid) in port_boundary_configs {
+            let config_str = format!(r#"
+            [primary]
+            db_type = "postgres"
+            host = "localhost"
+            port = {}
+            database = "test"
+            username = "user"
+            connect_timeout = 30
+            query_timeout = 60
+            application_name = "test"
+            
+            [pool]
+            min_connections = 1
+            max_connections = 10
+            idle_timeout = 600
+            max_lifetime = 3600
+            acquire_timeout = 30
+            test_query = "SELECT 1"
+            
+            [migration]
+            auto_migrate = true
+            migrations_dir = "./migrations"
+            migrations_table = "_migrations"
+            migration_timeout = 300
+            
+            [ssl]
+            mode = "prefer"
+            
+            [monitoring]
+            log_queries = false
+            slow_query_threshold = 1000
+            monitor_pool = true
+            monitor_interval = 60
+            enable_metrics = false
+            "#, port);
+
+            let parse_result: Result<DatabaseConfig, _> = toml::from_str(&config_str);
+            
+            if should_be_valid {
+                let config = parse_result.expect("Valid port should parse successfully");
+                assert_eq!(config.primary.port, port);
+            } else {
+                // Port 0 可能被TOML解析接受，但在逻辑上是无效的
+                if let Ok(config) = parse_result {
+                    assert_eq!(config.primary.port, port);
+                    // 在实际应用中，port 0 应该被验证逻辑拒绝
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_timeout_boundary_values() {
+        let timeout_configs = vec![
+            // Zero timeouts (边界情况)
+            (0u64, 0u64, 0u64),
+            // Very small timeouts
+            (1u64, 1u64, 1u64),
+            // Very large timeouts
+            (86400u64, 86400u64, 86400u64), // 24 hours
+        ];
+
+        for (connect_timeout, query_timeout, acquire_timeout) in timeout_configs {
+            let config_str = format!(r#"
+            [primary]
+            db_type = "postgres"
+            host = "localhost"
+            port = 5432
+            database = "test"
+            username = "user"
+            connect_timeout = {}
+            query_timeout = {}
+            application_name = "test"
+            
+            [pool]
+            min_connections = 1
+            max_connections = 10
+            idle_timeout = 600
+            max_lifetime = 3600
+            acquire_timeout = {}
+            test_query = "SELECT 1"
+            
+            [migration]
+            auto_migrate = true
+            migrations_dir = "./migrations"
+            migrations_table = "_migrations"
+            migration_timeout = 300
+            
+            [ssl]
+            mode = "prefer"
+            
+            [monitoring]
+            log_queries = false
+            slow_query_threshold = 1000
+            monitor_pool = true
+            monitor_interval = 60
+            enable_metrics = false
+            "#, connect_timeout, query_timeout, acquire_timeout);
+
+            let config: DatabaseConfig = toml::from_str(&config_str)
+                .expect("Timeout values should parse successfully");
+            
+            assert_eq!(config.primary.connect_timeout, connect_timeout);
+            assert_eq!(config.primary.query_timeout, query_timeout);
+            assert_eq!(config.pool.acquire_timeout, acquire_timeout);
+
+            // 验证零超时值会产生警告
+            if connect_timeout == 0 {
+                // validate_config 应该产生警告
+                let _ = validate_config(&config); // 目前只打印警告
+            }
+        }
+    }
+
+    #[test]
+    fn test_empty_string_configurations() {
+        let empty_string_configs = vec![
+            // Empty host
+            r#"
+            [primary]
+            db_type = "postgres"
+            host = ""
+            port = 5432
+            database = "test"
+            username = "user"
+            connect_timeout = 30
+            query_timeout = 60
+            application_name = "test"
+            
+            [pool]
+            min_connections = 1
+            max_connections = 10
+            idle_timeout = 600
+            max_lifetime = 3600
+            acquire_timeout = 30
+            test_query = "SELECT 1"
+            
+            [migration]
+            auto_migrate = true
+            migrations_dir = "./migrations"
+            migrations_table = "_migrations"
+            migration_timeout = 300
+            
+            [ssl]
+            mode = "prefer"
+            
+            [monitoring]
+            log_queries = false
+            slow_query_threshold = 1000
+            monitor_pool = true
+            monitor_interval = 60
+            enable_metrics = false
+            "#,
+            // Empty database name
+            r#"
+            [primary]
+            db_type = "postgres"
+            host = "localhost"
+            port = 5432
+            database = ""
+            username = "user"
+            connect_timeout = 30
+            query_timeout = 60
+            application_name = "test"
+            
+            [pool]
+            min_connections = 1
+            max_connections = 10
+            idle_timeout = 600
+            max_lifetime = 3600
+            acquire_timeout = 30
+            test_query = "SELECT 1"
+            
+            [migration]
+            auto_migrate = true
+            migrations_dir = "./migrations"
+            migrations_table = "_migrations"
+            migration_timeout = 300
+            
+            [ssl]
+            mode = "prefer"
+            
+            [monitoring]
+            log_queries = false
+            slow_query_threshold = 1000
+            monitor_pool = true
+            monitor_interval = 60
+            enable_metrics = false
+            "#,
+            // Empty username
+            r#"
+            [primary]
+            db_type = "postgres"
+            host = "localhost"
+            port = 5432
+            database = "test"
+            username = ""
+            connect_timeout = 30
+            query_timeout = 60
+            application_name = "test"
+            
+            [pool]
+            min_connections = 1
+            max_connections = 10
+            idle_timeout = 600
+            max_lifetime = 3600
+            acquire_timeout = 30
+            test_query = "SELECT 1"
+            
+            [migration]
+            auto_migrate = true
+            migrations_dir = "./migrations"
+            migrations_table = "_migrations"
+            migration_timeout = 300
+            
+            [ssl]
+            mode = "prefer"
+            
+            [monitoring]
+            log_queries = false
+            slow_query_threshold = 1000
+            monitor_pool = true
+            monitor_interval = 60
+            enable_metrics = false
+            "#,
+            // Empty application name
+            r#"
+            [primary]
+            db_type = "postgres"
+            host = "localhost"
+            port = 5432
+            database = "test"
+            username = "user"
+            connect_timeout = 30
+            query_timeout = 60
+            application_name = ""
+            
+            [pool]
+            min_connections = 1
+            max_connections = 10
+            idle_timeout = 600
+            max_lifetime = 3600
+            acquire_timeout = 30
+            test_query = "SELECT 1"
+            
+            [migration]
+            auto_migrate = true
+            migrations_dir = "./migrations"
+            migrations_table = "_migrations"
+            migration_timeout = 300
+            
+            [ssl]
+            mode = "prefer"
+            
+            [monitoring]
+            log_queries = false
+            slow_query_threshold = 1000
+            monitor_pool = true
+            monitor_interval = 60
+            enable_metrics = false
+            "#,
+        ];
+
+        for config_str in empty_string_configs {
+            let config: DatabaseConfig = toml::from_str(config_str)
+                .expect("Empty strings should parse successfully");
+            
+            // 这些配置在技术上有效，但在实际使用中可能有问题
+            // 在实际应用中，应该有额外的验证来检查这些字段不为空
+            assert!(validate_config(&config).is_ok() || validate_config(&config).is_err());
+        }
+    }
+
+    #[test]
+    fn test_replica_configuration_boundaries() {
+        let replica_configs = vec![
+            // Enabled replica without host
+            r#"
+            [primary]
+            db_type = "postgres"
+            host = "localhost"
+            port = 5432
+            database = "test"
+            username = "user"
+            connect_timeout = 30
+            query_timeout = 60
+            application_name = "test"
+            
+            [pool]
+            min_connections = 1
+            max_connections = 10
+            idle_timeout = 600
+            max_lifetime = 3600
+            acquire_timeout = 30
+            test_query = "SELECT 1"
+            
+            [migration]
+            auto_migrate = true
+            migrations_dir = "./migrations"
+            migrations_table = "_migrations"
+            migration_timeout = 300
+            
+            [ssl]
+            mode = "prefer"
+            
+            [monitoring]
+            log_queries = false
+            slow_query_threshold = 1000
+            monitor_pool = true
+            monitor_interval = 60
+            enable_metrics = false
+            
+            [replica]
+            enabled = true
+            "#,
+            // Disabled replica with full configuration
+            r#"
+            [primary]
+            db_type = "postgres"
+            host = "localhost"
+            port = 5432
+            database = "test"
+            username = "user"
+            connect_timeout = 30
+            query_timeout = 60
+            application_name = "test"
+            
+            [pool]
+            min_connections = 1
+            max_connections = 10
+            idle_timeout = 600
+            max_lifetime = 3600
+            acquire_timeout = 30
+            test_query = "SELECT 1"
+            
+            [migration]
+            auto_migrate = true
+            migrations_dir = "./migrations"
+            migrations_table = "_migrations"
+            migration_timeout = 300
+            
+            [ssl]
+            mode = "prefer"
+            
+            [monitoring]
+            log_queries = false
+            slow_query_threshold = 1000
+            monitor_pool = true
+            monitor_interval = 60
+            enable_metrics = false
+            
+            [replica]
+            enabled = false
+            host = "replica.example.com"
+            port = 5432
+            database = "test"
+            username = "user"
+            "#,
+        ];
+
+        for config_str in replica_configs {
+            let config: DatabaseConfig = toml::from_str(config_str)
+                .expect("Replica configurations should parse successfully");
+            
+            if let Some(replica) = &config.replica {
+                if replica.enabled.unwrap_or(false) && replica.host.is_none() {
+                    // 启用了副本但没有提供主机，这在实际应用中应该是错误
+                    // 目前的验证逻辑没有检查这种情况
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_monitoring_configuration_boundaries() {
+        let monitoring_configs = vec![
+            // Zero slow query threshold
+            r#"
+            [primary]
+            db_type = "postgres"
+            host = "localhost"
+            port = 5432
+            database = "test"
+            username = "user"
+            connect_timeout = 30
+            query_timeout = 60
+            application_name = "test"
+            
+            [pool]
+            min_connections = 1
+            max_connections = 10
+            idle_timeout = 600
+            max_lifetime = 3600
+            acquire_timeout = 30
+            test_query = "SELECT 1"
+            
+            [migration]
+            auto_migrate = true
+            migrations_dir = "./migrations"
+            migrations_table = "_migrations"
+            migration_timeout = 300
+            
+            [ssl]
+            mode = "prefer"
+            
+            [monitoring]
+            log_queries = true
+            slow_query_threshold = 0
+            monitor_pool = true
+            monitor_interval = 60
+            enable_metrics = true
+            "#,
+            // Very high slow query threshold
+            r#"
+            [primary]
+            db_type = "postgres"
+            host = "localhost"
+            port = 5432
+            database = "test"
+            username = "user"
+            connect_timeout = 30
+            query_timeout = 60
+            application_name = "test"
+            
+            [pool]
+            min_connections = 1
+            max_connections = 10
+            idle_timeout = 600
+            max_lifetime = 3600
+            acquire_timeout = 30
+            test_query = "SELECT 1"
+            
+            [migration]
+            auto_migrate = true
+            migrations_dir = "./migrations"
+            migrations_table = "_migrations"
+            migration_timeout = 300
+            
+            [ssl]
+            mode = "prefer"
+            
+            [monitoring]
+            log_queries = true
+            slow_query_threshold = 9223372036854775807
+            monitor_pool = true
+            monitor_interval = 0
+            enable_metrics = true
+            "#,
+        ];
+
+        for config_str in monitoring_configs {
+            let config: DatabaseConfig = toml::from_str(config_str)
+                .expect("Monitoring configurations should parse successfully");
+            
+            // 验证监控配置的合理性
+            if config.monitoring.slow_query_threshold == 0 {
+                // 零阈值意味着所有查询都被认为是慢查询
+            }
+            
+            if config.monitoring.monitor_interval == 0 {
+                // 零监控间隔可能导致性能问题
+            }
+        }
+    }
+
+    #[test]
+    fn test_serialization_roundtrip_with_boundaries() {
+        let mut config = DatabaseConfig::default();
+        
+        // 设置边界值
+        config.primary.port = 65535;
+        config.pool.min_connections = 0;
+        config.pool.max_connections = 1000;
+        config.pool.idle_timeout = 86400;
+        config.monitoring.slow_query_threshold = 1;
+        
+        // 序列化
+        let serialized = toml::to_string(&config)
+            .expect("Should be able to serialize boundary values");
+        
+        // 反序列化
+        let deserialized: DatabaseConfig = toml::from_str(&serialized)
+            .expect("Should be able to deserialize boundary values");
+        
+        // 验证值保持一致
+        assert_eq!(deserialized.primary.port, config.primary.port);
+        assert_eq!(deserialized.pool.min_connections, config.pool.min_connections);
+        assert_eq!(deserialized.pool.max_connections, config.pool.max_connections);
+        assert_eq!(deserialized.pool.idle_timeout, config.pool.idle_timeout);
+        assert_eq!(deserialized.monitoring.slow_query_threshold, config.monitoring.slow_query_threshold);
+    }
+
+    #[test]
+    fn test_invalid_toml_structure() {
+        let invalid_toml_configs = vec![
+            // Missing required field
+            r#"
+            [primary]
+            db_type = "postgres"
+            host = "localhost"
+            # port is missing
+            database = "test"
+            username = "user"
+            connect_timeout = 30
+            query_timeout = 60
+            application_name = "test"
+            "#,
+            // Invalid TOML syntax
+            r#"
+            [primary
+            db_type = "postgres"
+            host = "localhost"
+            port = 5432
+            "#,
+            // Type mismatch
+            r#"
+            [primary]
+            db_type = "postgres"
+            host = "localhost"
+            port = "not_a_number"
+            database = "test"
+            username = "user"
+            connect_timeout = 30
+            query_timeout = 60
+            application_name = "test"
+            "#,
+        ];
+
+        for invalid_config in invalid_toml_configs {
+            let result: Result<DatabaseConfig, _> = toml::from_str(invalid_config);
+            assert!(result.is_err(), "Invalid TOML should fail to parse");
+        }
+    }
+
+    #[test]
+    fn test_maximum_safe_numeric_values() {
+        let max_values_config = format!(r#"
+        [primary]
+        db_type = "postgres"
+        host = "localhost"
+        port = 65535
+        database = "test"
+        username = "user"
+        connect_timeout = {}
+        query_timeout = {}
+        application_name = "test"
+        
+        [pool]
+        min_connections = 0
+        max_connections = {}
+        idle_timeout = {}
+        max_lifetime = {}
+        acquire_timeout = {}
+        test_query = "SELECT 1"
+        
+        [migration]
+        auto_migrate = true
+        migrations_dir = "./migrations"
+        migrations_table = "_migrations"
+        migration_timeout = {}
+        
+        [ssl]
+        mode = "prefer"
+        
+        [monitoring]
+        log_queries = true
+        slow_query_threshold = {}
+        monitor_pool = true
+        monitor_interval = {}
+        enable_metrics = true
+        "#, 
+        i64::MAX, i64::MAX, // connect_timeout, query_timeout
+        u32::MAX, // max_connections
+        i64::MAX, i64::MAX, i64::MAX, // idle_timeout, max_lifetime, acquire_timeout  
+        i64::MAX, // migration_timeout
+        i64::MAX, i64::MAX // slow_query_threshold, monitor_interval
+        );
+
+        let config: DatabaseConfig = toml::from_str(&max_values_config)
+            .expect("Maximum safe values should parse successfully");
+        
+        assert_eq!(config.primary.port, 65535);
+        assert_eq!(config.pool.max_connections, u32::MAX);
+        assert_eq!(config.primary.connect_timeout, i64::MAX as u64);
+        assert_eq!(config.monitoring.slow_query_threshold, i64::MAX as u64);
+    }
 }

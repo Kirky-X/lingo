@@ -1,0 +1,13 @@
+D:\project\lingo\target\debug\deps\libtracing-35a2958f8ebf7766.rmeta: D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\lib.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\macros.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\dispatcher.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\field.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\instrument.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\level_filters.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\span.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\stdlib.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\subscriber.rs
+
+D:\project\lingo\target\debug\deps\tracing-35a2958f8ebf7766.d: D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\lib.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\macros.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\dispatcher.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\field.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\instrument.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\level_filters.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\span.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\stdlib.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\subscriber.rs
+
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\lib.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\macros.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\dispatcher.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\field.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\instrument.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\level_filters.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\span.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\stdlib.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tracing-0.1.41\src\subscriber.rs:

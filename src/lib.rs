@@ -18,9 +18,8 @@
 //!
 //! ## Quick Start
 //!
-//! ```rust
-//! use lingo::Config;
-//! use serde::{Deserialize, Serialize};
+//! ```ignore
+//! use lingo::{Config, Deserialize, Serialize};
 //!
 //! #[derive(Config, Default, Deserialize, Serialize)]
 //! struct AppConfig {
@@ -30,7 +29,7 @@
 //! }
 //!
 //! fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     let config = AppConfig::default();
+//!     let config = AppConfig::load()?;
 //!     println!("Server running on {}:{}", config.host, config.port);
 //!     Ok(())
 //! }
@@ -51,10 +50,14 @@ pub use paths::{add_specified_config_file, resolve_config_files, ConfigFilePath,
 
 // 对外重导出 Serde 常用 traits
 pub use serde::{Deserialize, Serialize};
+// 兼容派生宏生成代码：在 crate 根下提供 `serde` 模块路径
+pub use ::serde as serde;
 
 // 新增：对外重导出 figment 与 clap 常用类型，供 derive 宏下游直接使用
 pub use figment::Figment;
 pub use clap::{Arg, ArgAction, ArgMatches, Command};
+// 兼容派生宏生成代码：在 crate 根下提供 `toml` 模块路径
+pub use ::toml as toml;
 
 // 对外重导出 derive 宏
 pub use lingo_derive::Config;

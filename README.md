@@ -7,17 +7,35 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Rust](https://github.com/Kirky-X/lingo/actions/workflows/rust.yml/badge.svg)](https://github.com/Kirky-X/lingo/actions/workflows/rust.yml)
 
+## 📋 项目范围
+
+**Lingo 专注于**：
+- 配置文件加载、解析和类型转换
+- 多配置源合并（文件、环境变量、命令行）
+- 配置验证和错误处理
+- 开发工具（模板生成、帮助文档）
+
+**Lingo 不包含**：
+- Web 服务器实现或 HTTP 功能
+- 数据库连接或 ORM 功能  
+- 缓存、消息队列等基础设施
+- 业务逻辑或应用框架
+
+**examples/ 目录说明**：示例项目展示如何在不同场景（Web 服务、数据库应用、异步程序）中使用 Lingo 进行配置管理，但这些应用本身超出了 Lingo 库的核心功能。
+
 **[English](README_EN.md)** | **[更新日志](CHANGELOG.md)** | **[文档](https://docs.rs/lingo)**
 
 ## 🌟 特性
 
 - **多源配置加载** - 支持 TOML、JSON、INI 文件、环境变量和命令行参数
 - **智能优先级** - 自动按优先级合并配置：系统文件 < 用户文件 < 指定文件 < 环境变量 < 命令行参数
-- **过程宏驱动** - 通过 `#[derive(LingoLoader)]` 和 `#[lingo_opt(...)]` 属性简化配置定义
+- **过程宏驱动** - 通过 `#[derive(Config)]` 和 `#[config(...)]`/`#[lingo_opt(...)]` 属性简化配置定义
 - **类型安全** - 完全的编译时类型检查，避免运行时配置错误
 - **深度集成 Clap** - 自动生成命令行参数解析，包括帮助信息和版本信息
 - **嵌套结构体** - 支持任意深度的嵌套配置结构
 - **配置模板生成** - 自动生成带注释的配置文件模板
+- **错误处理** - 提供完善的配置管理错误类型
+- **路径解析** - 自动发现系统和用户配置目录
 - **异步支持** - 提供同步和异步两种加载方式
 - **跨平台** - 支持 Linux、macOS 和 Windows
 
@@ -27,39 +45,21 @@
 
 ```toml
 [dependencies]
-lingo = "0.1.0"
+lingo = "0.2.0"
 serde = { version = "1.0", features = ["derive"] }
 ```
 
 ### 基本用法
 
 ```rust
-use lingo::Config;
+use lingo::Config; // derive 宏从 lingo 暴露
 use serde::{Deserialize, Serialize};
 
-#[derive(LingoLoader, Serialize, Deserialize, Debug, Default)]
-#[lingo(app_name = "myapp", env_prefix = "MYAPP")]
+#[derive(Config, Serialize, Deserialize, Debug, Default)]
 struct AppConfig {
-    #[lingo_opt(description = "服务器主机地址", default = "\"localhost\".to_string()")]
     host: String,
-    
-    #[lingo_opt(description = "服务器端口", default = "8080")]
     port: u16,
-    
-    #[lingo_opt(description = "是否启用调试模式", name_clap_long = "debug")]
-    debug_mode: Option<bool>,
-    
-    #[lingo_opt(flatten)]
-    database: DatabaseConfig,
-}
-
-#[derive(Serialize, Deserialize, Debug, Default)]
-struct DatabaseConfig {
-    #[lingo_opt(description = "数据库URL")]
-    url: Option<String>,
-    
-    #[lingo_opt(description = "最大连接数", default = "10")]
-    max_connections: u32,
+    debug: bool,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -67,7 +67,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = AppConfig::load()?;
     
     println!("服务器将在 {}:{} 启动", config.host, config.port);
-    println!("调试模式: {:?}", config.debug_mode);
+    println!("调试模式: {}", config.debug);
     
     Ok(())
 }
@@ -129,12 +129,9 @@ Lingo 按以下优先级加载和合并配置（后者覆盖前者）：
 - `skip` - 跳过此字段
 - `clap(...)` - 传递给 clap 的额外属性
 
-#### `#[lingo(...)]` 结构体属性
+#### `#[config(...)]` 结构体属性
 
-- `app_name = "名称"` - 应用程序名称，用于配置文件路径
-- `env_prefix = "前缀"` - 环境变量前缀
-- `version = 1` - 宏行为版本（用于向后兼容）
-- `max_parse_depth = 128` - 最大解析深度
+- `env_prefix = "前缀"` - 环境变量前缀，如 `"MYAPP_"`
 
 ### 异步支持
 
@@ -152,9 +149,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### 配置模板生成
 
 ```rust
-// 生成 TOML 配置模板
-let template = AppConfig::generate_config_template(lingo_core::paths::ConfigFileType::Toml)?;
-println!("{}", template);
+// 生成 TOML 配置模板文件到磁盘
+AppConfig::generate_template()?;
 ```
 
 ### 错误处理
@@ -162,7 +158,7 @@ println!("{}", template);
 Lingo 提供详细的错误信息：
 
 ```rust
-use lingo_core::error::LingoError;
+use lingo::LingoError;
 
 match AppConfig::load() {
     Ok(config) => println!("配置加载成功: {:?}", config),
@@ -171,6 +167,9 @@ match AppConfig::load() {
     }
     Err(LingoError::Io { source, path }) => {
         eprintln!("IO 错误: {:?} - {}", path, source);
+    }
+    Err(LingoError::Figment(figment_error)) => {
+        eprintln!("配置提取错误: {}", figment_error);
     }
     Err(e) => eprintln!("其他错误: {}", e),
 }
@@ -181,7 +180,7 @@ match AppConfig::load() {
 ### 自定义配置文件路径
 
 ```rust
-use lingo_core::paths::{ConfigFilePath, ConfigFileType};
+use lingo::{ConfigFilePath, ConfigFileType};
 
 let custom_paths = vec![
     ConfigFilePath {
@@ -194,23 +193,7 @@ let custom_paths = vec![
 let config = AppConfig::load_with_custom_paths(&custom_paths)?;
 ```
 
-### 与现有 Clap 应用集成
 
-```rust
-use clap::Parser;
-
-#[derive(Parser)]
-struct CliArgs {
-    #[command(flatten)]
-    config_args: AppConfigClapArgs,  // 由 LingoLoader 生成
-    
-    #[arg(long)]
-    verbose: bool,
-}
-
-let cli = CliArgs::parse();
-let config = AppConfig::from_clap_matches(&cli.config_args.into())?;
-```
 
 ## 🎯 示例项目
 

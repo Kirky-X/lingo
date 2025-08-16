@@ -100,7 +100,7 @@ generated/
 ```bash
 # 应用基本配置
 APP_NAME="Template Example App"
-APP_VERSION="0.1.0"
+APP_VERSION="0.2.0"
 ENVIRONMENT="production"
 DEBUG=false
 HOST="0.0.0.0"

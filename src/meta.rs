@@ -11,9 +11,9 @@ pub struct LingoAppMeta {
     pub app_name: String,
     /// 全局环境变量前缀
     pub env_prefix: Option<String>,
-    /// 宏行为版本，来自 #[lingo(version = ...)]
+    /// 宏行为版本（内部语义版本，随库版本演进）
     pub behavior_version: u32,
-    /// 配置文件解析深度限制，来自 #[lingo(max_parse_depth = ...)]
+    /// 配置文件解析深度限制（由内部默认策略与 LingoFileProvider 控制）
     pub max_parse_depth: u32,
 }
 
@@ -114,7 +114,7 @@ pub struct StructMeta {
     pub struct_name: &'static str,
     /// 该结构体包含的所有字段的元数据列表
     pub fields: Vec<FieldMeta>,
-    /// 标记这是否是用户直接派生 LingoLoader 的顶层结构体
+    /// 标记这是否是用户直接派生 Config 的顶层结构体
     pub is_top_level_config: bool,
     /// 用于存储此结构体中类型为其他配置结构体的字段的元数据
     /// 键是字段的 rust_name，值是对应嵌套结构体的 StructMeta 引用

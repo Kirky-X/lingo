@@ -7,7 +7,6 @@ use lingo_derive::Config;
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::fs;
-use std::path::PathBuf;
 use tempfile::TempDir;
 
 /// 嵌套配置结构用于测试
@@ -83,12 +82,21 @@ impl Default for NestedTestConfig {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::Write;
-    use tempfile::NamedTempFile;
+    // 移除未使用的导入，新增并发控制原语
+    // use std::io::Write; // 未使用，移除以消除编译警告
+    // use tempfile::NamedTempFile; // 未使用，移除以消除编译警告
+    use std::sync::{Mutex, OnceLock};
+
+    // 进程级环境变量为全局共享，使用互斥锁序列化依赖 env 的测试，避免并发相互干扰
+    static ENV_MUTEX: OnceLock<Mutex<()>> = OnceLock::new();
+    fn env_lock() -> std::sync::MutexGuard<'static, ()> {
+        ENV_MUTEX.get_or_init(|| Mutex::new(())).lock().unwrap()
+    }
 
     /// 测试仅从文件加载嵌套配置
     #[test]
     fn test_nested_config_from_file_only() {
+        let _env_guard = env_lock();
         let temp_dir = TempDir::new().unwrap();
         let config_path = temp_dir.path().join("config.toml");
         
@@ -145,6 +153,7 @@ ttl = 600
     /// 测试环境变量覆盖嵌套配置
     #[test]
     fn test_nested_config_env_override() {
+        let _env_guard = env_lock();
         // 清理可能存在的环境变量
         env::remove_var("NESTEDTESTCONFIG_APP_NAME");
         env::remove_var("NESTEDTESTCONFIG_SERVER__HOST");
@@ -217,6 +226,7 @@ timeout = 30
     /// 测试命令行参数覆盖嵌套配置（最高优先级）
     #[test]
     fn test_nested_config_clap_override() {
+        let _env_guard = env_lock();
         // 清理可能存在的环境变量
         env::remove_var("NESTEDTESTCONFIG_APP_NAME");
         env::remove_var("NESTEDTESTCONFIG_SERVER__PORT");
@@ -278,6 +288,7 @@ timeout = 30
     /// 测试 flatten 字段在多源配置中的正确映射
     #[test]
     fn test_flatten_field_mapping() {
+        let _env_guard = env_lock();
         // 清理可能存在的环境变量
         env::remove_var("NESTEDTESTCONFIG_LOG_LEVEL");
         env::remove_var("NESTEDTESTCONFIG_LOG_FORMAT");
@@ -344,6 +355,7 @@ timeout = 15
     /// 测试可选字段在多源配置中的处理
     #[test]
     fn test_optional_nested_fields() {
+        let _env_guard = env_lock();
         // 清理可能存在的环境变量
         env::remove_var("NESTEDTESTCONFIG_CACHE__ENABLED");
         env::remove_var("NESTEDTESTCONFIG_CACHE__TTL");
@@ -412,6 +424,7 @@ timeout = 30
     /// 测试深度嵌套结构的配置映射
     #[test]
     fn test_deep_nested_structure() {
+        let _env_guard = env_lock();
         // 清理可能存在的环境变量
         env::remove_var("DEEPNESTEDCONFIG_LEVEL1__LEVEL2__LEVEL3__DEEP_VALUE");
         env::remove_var("DEEPNESTEDCONFIG_LEVEL1__VALUE1");
@@ -502,6 +515,7 @@ deep_value = "file_deep"
     /// 端到端优先级测试：文件 < 环境变量 < 命令行参数（含嵌套与 flatten）
     #[test]
     fn test_end_to_end_priority_override() {
+        let _env_guard = env_lock();
         // 清理相关环境变量
         env::remove_var("NESTEDTESTCONFIG_APP_NAME");
         env::remove_var("NESTEDTESTCONFIG_SERVER__HOST");
@@ -572,6 +586,7 @@ format = "text"
     /// INI 格式解析与嵌套/flatten 映射测试
     #[test]
     fn test_nested_config_ini_format() {
+        let _env_guard = env_lock();
         // 清理相关环境变量，避免干扰
         env::remove_var("NESTEDTESTCONFIG_APP_NAME");
         env::remove_var("NESTEDTESTCONFIG_SERVER__HOST");

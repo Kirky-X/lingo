@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="CargoProjects">
+    <cargoProject FILE="$PROJECT_DIR$/Cargo.toml">
+      <package file="$PROJECT_DIR$/examples/async">
+        <enabledFeature name="default" />
+      </package>
+      <package file="$PROJECT_DIR$/examples/basic">
+        <enabledFeature name="default" />
+      </package>
+      <package file="$PROJECT_DIR$/examples/custom_file_reader">
+        <enabledFeature name="default" />
+      </package>
+      <package file="$PROJECT_DIR$/examples/database">
+        <enabledFeature name="default" />
+      </package>
+      <package file="$PROJECT_DIR$">
+        <enabledFeature name="default" />
+      </package>
+      <package file="$PROJECT_DIR$/lingo-derive">
+        <enabledFeature name="default" />
+      </package>
+      <package file="$PROJECT_DIR$/examples/nested">
+        <enabledFeature name="default" />
+      </package>
+      <package file="$PROJECT_DIR$/examples/template">
+        <enabledFeature name="default" />
+      </package>
+      <package file="$PROJECT_DIR$/examples/web_server">
+        <enabledFeature name="default" />
+      </package>
+    </cargoProject>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="eab812c4-a749-447f-acc8-b209ede05a99" name="Changes" comment="v0.2.0，可以自定义文件解析器，读取自定义的文件格式" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="RsBuildProfile:test" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Kirky-X&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Kirky-X/lingo.git&quot;,
+    &quot;accountId&quot;: &quot;d32a59c8-468f-4692-8e2b-01bd1cdf2985&quot;
+  }
+}</component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="AFKDnxLU" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 0
+}</component>
+  <component name="ProjectId" id="2yK9eLNWetwX5cL1bX5lMqVTUKJ" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.rust.reset.selective.auto.import&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;org.rust.cargo.project.model.PROJECT_DISCOVERY&quot;: &quot;true&quot;,
+    &quot;org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon&quot;: &quot;&quot;,
+    &quot;org.rust.first.attach.projects&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RunManager">
+    <configuration name="Test lingo" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
+      <option name="buildProfileId" value="test" />
+      <option name="command" value="test --workspace" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="RustProjectSettings">
+    <option name="toolchainHomeDirectory" value="$PROJECT_DIR$/../../SDK/rust/cargo/bin" />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="eab812c4-a749-447f-acc8-b209ede05a99" name="Changes" comment="" />
+      <created>1749572493565</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1749572493565</updated>
+      <workItem from="1749572496082" duration="183000" />
+      <workItem from="1749572747667" duration="2820000" />
+      <workItem from="1749605626436" duration="93000" />
+      <workItem from="1749608387037" duration="527000" />
+      <workItem from="1749610174699" duration="4065000" />
+      <workItem from="1749614579232" duration="5214000" />
+      <workItem from="1749652760133" duration="8000" />
+      <workItem from="1750147282351" duration="3746000" />
+    </task>
+    <task id="LOCAL-00001" summary="0.1.0 测试版本">
+      <option name="closed" value="true" />
+      <created>1749573648045</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1749573648045</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Initial commit: Add Lingo configuration management library">
+      <option name="closed" value="true" />
+      <created>1749610840654</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1749610840654</updated>
+    </task>
+    <task id="LOCAL-00003" summary="optimize import and add unsafe surround">
+      <option name="closed" value="true" />
+      <created>1749611620368</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1749611620368</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Initial commit: Add Lingo configuration management library">
+      <option name="closed" value="true" />
+      <created>1749614020858</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1749614020858</updated>
+    </task>
+    <task id="LOCAL-00005" summary="optimize README">
+      <option name="closed" value="true" />
+      <created>1749614909224</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1749614909224</updated>
+    </task>
+    <task id="LOCAL-00006" summary="optimize README">
+      <option name="closed" value="true" />
+      <created>1749615098161</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1749615098161</updated>
+    </task>
+    <task id="LOCAL-00007" summary="optimize README_EN">
+      <option name="closed" value="true" />
+      <created>1749615338187</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1749615338187</updated>
+    </task>
+    <task id="LOCAL-00008" summary="add CHANGELOG.md">
+      <option name="closed" value="true" />
+      <created>1749615491073</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1749615491073</updated>
+    </task>
+    <task id="LOCAL-00009" summary="add example item:nested,async,template">
+      <option name="closed" value="true" />
+      <created>1749625965768</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1749625965768</updated>
+    </task>
+    <task id="LOCAL-00010" summary="&#10;Update CHANGELOG.md">
+      <option name="closed" value="true" />
+      <created>1749627430873</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1749627430873</updated>
+    </task>
+    <task id="LOCAL-00011" summary="add  License">
+      <option name="closed" value="true" />
+      <created>1749627684472</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1749627684472</updated>
+    </task>
+    <task id="LOCAL-00012" summary="v0.2.0，可以自定义文件解析器，读取自定义的文件格式">
+      <option name="closed" value="true" />
+      <created>1750163646240</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1750163646240</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="0.1.0 测试版本" />
+    <MESSAGE value="optimize import and add unsafe surround" />
+    <MESSAGE value="Initial commit: Add Lingo configuration management library" />
+    <MESSAGE value="optimize README" />
+    <MESSAGE value="optimize README_EN" />
+    <MESSAGE value="add CHANGELOG.md" />
+    <MESSAGE value="add example item:nested,async,template" />
+    <MESSAGE value="&#10;Update CHANGELOG.md" />
+    <MESSAGE value="add  License" />
+    <MESSAGE value="v0.2.0，可以自定义文件解析器，读取自定义的文件格式" />
+    <option name="LAST_COMMIT_MESSAGE" value="v0.2.0，可以自定义文件解析器，读取自定义的文件格式" />
+  </component>
+</project>

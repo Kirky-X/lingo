@@ -3,7 +3,7 @@
 
 # 应用程序基本信息
 name = "Nested Configuration Example"
-version = "0.1.0"
+version = "0.2.0"
 environment = "development"
 debug = true
 
@@ -92,7 +92,7 @@ retries = 3
 
 [external_services.payment_service.headers]
 "Content-Type" = "application/json"
-"User-Agent" = "NestedExample/0.1.0"
+"User-Agent" = "NestedExample/0.2.0"
 
 [external_services.notification_service]
 url = "https://api.notifications.example.com"
@@ -111,5 +111,5 @@ sample_rate = 0.1
 
 [monitoring.tags]
 service = "nested-example"
-version = "0.1.0"
+version = "0.2.0"
 environment = "development"

@@ -78,7 +78,7 @@ dependencies = [
 
 [[package]]
 name = "async-example"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "futures",
  "lingo",
@@ -181,7 +181,7 @@ checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
 
 [[package]]
 name = "basic-example"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "lingo",
  "serde",
@@ -333,7 +333,7 @@ checksum = "43da5946c66ffcc7745f48db692ffbb10a83bfe0afd96235c5c2a4fb23994929"
 
 [[package]]
 name = "custom_file_reader"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "figment",
  "lingo",
@@ -343,7 +343,7 @@ dependencies = [
 
 [[package]]
 name = "database-example"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "lingo",
  "serde",
@@ -961,8 +961,10 @@ dependencies = [
 
 [[package]]
 name = "lingo-derive"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
+ "proc-macro-crate",
+ "proc-macro2",
  "quote",
  "syn",
 ]
@@ -1061,7 +1063,7 @@ dependencies = [
 
 [[package]]
 name = "nested-example"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "lingo",
  "serde",
@@ -1243,6 +1245,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5a7c30837279ca13e7c867e9e40053bc68740f988cb07f7ca6df43cc734b585"
 dependencies = [
  "zerovec",
+]
+
+[[package]]
+name = "proc-macro-crate"
+version = "3.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "edce586971a4dfaa28950c6f18ed55e0406c1ab88bbce2c6f6293a7aaba73d35"
+dependencies = [
+ "toml_edit",
 ]
 
 [[package]]
@@ -1669,7 +1680,7 @@ dependencies = [
 
 [[package]]
 name = "template"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "clap",
  "colored",
@@ -2105,7 +2116,7 @@ dependencies = [
 
 [[package]]
 name = "web-server-example"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "axum",
  "lingo",

@@ -1,0 +1,12 @@
+D:\project\lingo\target\debug\deps\libanstyle-08895e9481f60692.rmeta: D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\lib.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\macros.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\color.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\effect.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\reset.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\style.rs
+
+D:\project\lingo\target\debug\deps\libanstyle-08895e9481f60692.rlib: D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\lib.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\macros.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\color.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\effect.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\reset.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\style.rs
+
+D:\project\lingo\target\debug\deps\anstyle-08895e9481f60692.d: D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\lib.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\macros.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\color.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\effect.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\reset.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\style.rs
+
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\lib.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\macros.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\color.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\effect.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\reset.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.11\src\style.rs:

@@ -1,0 +1,11 @@
+D:\project\lingo\target\debug\deps\libquote-c3f05c154827ac76.rmeta: D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\lib.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\ext.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\format.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\ident_fragment.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\to_tokens.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\runtime.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\spanned.rs
+
+D:\project\lingo\target\debug\deps\quote-c3f05c154827ac76.d: D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\lib.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\ext.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\format.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\ident_fragment.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\to_tokens.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\runtime.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\spanned.rs
+
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\lib.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\ext.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\format.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\ident_fragment.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\to_tokens.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\runtime.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.40\src\spanned.rs:

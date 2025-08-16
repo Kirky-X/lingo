@@ -271,110 +271,431 @@ workers = 4
 #[cfg(test)]
 mod tests {
     use super::*;
-    use lingo::providers::LingoFileProviderGeneric;
-    use lingo::providers::file_provider::FileFormat;
+    use figment::Figment;
 
     #[test]
-    fn test_memory_file_reader_basic_operations() {
+    fn test_memory_file_reader_basic_ops() {
         let reader = MemoryFileReader::new();
-        
-        // Test file doesn't exist initially
-        assert!(!reader.exists(std::path::Path::new("test.txt")));
-        
-        // Add file
-        reader.add_file("test.txt", "Hello, World!".to_string()).unwrap();
-        assert!(reader.exists(std::path::Path::new("test.txt")));
-        
-        // Read file
-        let content = reader.read_content(std::path::Path::new("test.txt")).unwrap();
-        assert_eq!(content, "Hello, World!");
-        
-        // Remove file
-        reader.remove_file("test.txt").unwrap();
-        assert!(!reader.exists(std::path::Path::new("test.txt")));
+        assert!(!reader.exists(std::path::Path::new("a.txt")));
+
+        // MemoryFileReader implements FileReader with add/remove operations via add_file/remove_file
+        reader.add_file("a.txt", "hello".to_string()).unwrap();
+        assert!(reader.exists(std::path::Path::new("a.txt")));
+
+        let content = reader.read_content(std::path::Path::new("a.txt")).unwrap();
+        assert_eq!(content, "hello");
+
+        reader.remove_file("a.txt").unwrap();
+        assert!(!reader.exists(std::path::Path::new("a.txt")));
     }
 
     #[test]
-    fn test_memory_file_reader_with_lingo_provider() {
-        let reader = MemoryFileReader::new();
-        
-        // Add a TOML config file
-        let config_content = r#"
-[app]
-name = "Test App"
-version = "1.0.0"
-"#;
-        reader.add_file("config.toml", config_content.to_string()).unwrap();
-        
-        // Create provider with custom reader
+    fn test_config_extract_from_memory_reader() {
+        let memory_reader = MemoryFileReader::new();
         let provider = LingoFileProviderGeneric::new(
             std::path::Path::new("config.toml"),
             FileFormat::Toml,
-            true, // is_required
-            10,   // max_parse_depth
-            reader,
+            true,
+            10,
+            memory_reader.clone(),
         );
-        
-        // Test parsing
-        #[derive(serde::Deserialize, Debug, PartialEq)]
-        struct AppConfig {
-            name: String,
-            version: String,
-        }
-        
-        #[derive(serde::Deserialize, Debug, PartialEq)]
-        struct TestConfig {
-            app: AppConfig,
-        }
-        
-        use figment::Figment;
-        let config: TestConfig = Figment::new().merge(provider).extract().unwrap();
-        assert_eq!(config.app.name, "Test App");
-        assert_eq!(config.app.version, "1.0.0");
+
+        // write a minimal config to memory
+        memory_reader
+            .add_file(
+                "config.toml",
+                r#"
+                [app]
+                name = "MyApp"
+                version = "1.0.0"
+                debug = false
+
+                [database]
+                host = "localhost"
+                port = 5432
+                username = "user"
+                password = "pass"
+                database = "mydb"
+
+                [features]
+                enabled = ["a", "b"]
+
+                [cache]
+                ttl = 60
+                max_size = 1024
+                "#.to_string(),
+            )
+            .unwrap();
+
+        let config: AppConfig = Figment::new()
+            .merge(provider)
+            .extract()
+            .expect("Should be able to extract AppConfig from memory reader");
+
+        assert_eq!(config.database.host, "localhost");
+        assert_eq!(config.database.port, 5432);
     }
 
     #[test]
-    fn test_memory_file_reader_error_handling() {
+    fn test_memory_reader_concurrent_safety() {
+        use std::thread;
+        use std::sync::Arc;
+
+        let reader = Arc::new(MemoryFileReader::new());
+        let reader1 = Arc::clone(&reader);
+        let reader2 = Arc::clone(&reader);
+
+        // 并发写入测试
+        let handle1 = thread::spawn(move || {
+            for i in 0..50 {
+                reader1.add_file(format!("file_{}.txt", i), format!("content_{}", i)).unwrap();
+            }
+        });
+
+        let handle2 = thread::spawn(move || {
+            for i in 50..100 {
+                reader2.add_file(format!("file_{}.txt", i), format!("content_{}", i)).unwrap();
+            }
+        });
+
+        handle1.join().unwrap();
+        handle2.join().unwrap();
+
+        // 验证所有文件都成功写入
+        for i in 0..100 {
+            assert!(reader.exists(std::path::Path::new(&format!("file_{}.txt", i))));
+        }
+
+        // 验证文件数量
+        let files = reader.list_files().unwrap();
+        assert_eq!(files.len(), 100);
+    }
+
+    #[test]
+    fn test_memory_reader_file_not_found_error() {
         let reader = MemoryFileReader::new();
         
-        // Test reading non-existent file
-        let result = reader.read_content(std::path::Path::new("nonexistent.txt"));
+        // 读取不存在的文件应该返回错误
+        let result = reader.read_content(std::path::Path::new("nonexistent.toml"));
         assert!(result.is_err());
         
-        // Test with provider
+        match result.unwrap_err() {
+            LingoError::Io { source, path } => {
+                assert_eq!(source.kind(), std::io::ErrorKind::NotFound);
+                assert_eq!(path, std::path::PathBuf::from("nonexistent.toml"));
+            },
+            _ => panic!("Expected LingoError::Io with NotFound error kind"),
+        }
+    }
+
+    #[test]
+    fn test_memory_reader_empty_file_handling() {
+        let reader = MemoryFileReader::new();
+        
+        // 添加空文件
+        reader.add_file("empty.toml", "".to_string()).unwrap();
+        assert!(reader.exists(std::path::Path::new("empty.toml")));
+        
+        let content = reader.read_content(std::path::Path::new("empty.toml")).unwrap();
+        assert_eq!(content, "");
+        
+        // 尝试解析空配置文件应该失败
         let provider = LingoFileProviderGeneric::new(
-            std::path::Path::new("nonexistent.toml"),
+            std::path::Path::new("empty.toml"),
             FileFormat::Toml,
-            true, // is_required
-            10,   // max_parse_depth
-            reader,
+            true,
+            10,
+            reader.clone(),
         );
         
-        #[derive(serde::Deserialize)]
-        struct TestConfig {
-            name: String,
-        }
-        
-        use figment::Figment;
-        let result = Figment::new().merge(provider).extract::<TestConfig>();
+        let result = Figment::new().merge(provider).extract::<AppConfig>();
         assert!(result.is_err());
     }
 
     #[test]
-    fn test_memory_file_reader_list_files() {
+    fn test_memory_reader_invalid_toml_handling() {
         let reader = MemoryFileReader::new();
         
-        // Initially empty
-        let files = reader.list_files().unwrap();
-        assert!(files.is_empty());
+        // 添加无效的 TOML 文件
+        let invalid_toml = r#"
+        [app
+        name = "Invalid TOML"
+        debug = 
+        "#;
         
-        // Add some files
-        reader.add_file("file1.txt", "content1".to_string()).unwrap();
-        reader.add_file("file2.txt", "content2".to_string()).unwrap();
+        reader.add_file("invalid.toml", invalid_toml.to_string()).unwrap();
         
-        let files = reader.list_files().unwrap();
-        assert_eq!(files.len(), 2);
-        assert!(files.contains(&"file1.txt".to_string()));
-        assert!(files.contains(&"file2.txt".to_string()));
+        let provider = LingoFileProviderGeneric::new(
+            std::path::Path::new("invalid.toml"),
+            FileFormat::Toml,
+            true,
+            10,
+            reader.clone(),
+        );
+        
+        let result = Figment::new().merge(provider).extract::<AppConfig>();
+        assert!(result.is_err(), "Invalid TOML should fail to parse");
+    }
+
+    #[test]
+    fn test_memory_reader_partial_config_missing_sections() {
+        let reader = MemoryFileReader::new();
+        
+        // 只包含部分必需字段的配置
+        let partial_config = r#"
+        [app]
+        name = "Partial App"
+        version = "1.0.0"
+        debug = false
+        "#;
+        
+        reader.add_file("partial.toml", partial_config.to_string()).unwrap();
+        
+        let provider = LingoFileProviderGeneric::new(
+            std::path::Path::new("partial.toml"),
+            FileFormat::Toml,
+            true,
+            10,
+            reader.clone(),
+        );
+        
+        let result = Figment::new().merge(provider).extract::<AppConfig>();
+        assert!(result.is_err(), "Partial config missing required sections should fail");
+    }
+
+    #[test]
+    fn test_memory_reader_boundary_values() {
+        let reader = MemoryFileReader::new();
+        
+        // 使用边界值的配置
+        let boundary_config = r#"
+        [app]
+        name = ""
+        version = ""
+        debug = true
+
+        [database]
+        host = ""
+        port = 0
+        username = ""
+        password = ""
+        database = ""
+
+        [features]
+        enabled = []
+
+        [cache]
+        ttl = 0
+        max_size = 0
+        "#;
+        
+        reader.add_file("boundary.toml", boundary_config.to_string()).unwrap();
+        
+        let provider = LingoFileProviderGeneric::new(
+            std::path::Path::new("boundary.toml"),
+            FileFormat::Toml,
+            true,
+            10,
+            reader.clone(),
+        );
+        
+        let config: AppConfig = Figment::new()
+            .merge(provider)
+            .extract()
+            .expect("Boundary values should be parseable");
+        
+        assert_eq!(config.app.name, "");
+        assert_eq!(config.database.port, 0);
+        assert_eq!(config.features.enabled.len(), 0);
+        assert_eq!(config.cache.ttl, 0);
+        assert_eq!(config.cache.max_size, 0);
+    }
+
+    #[test]
+    fn test_memory_reader_max_values() {
+        let reader = MemoryFileReader::new();
+        
+        // 使用最大合法值的配置
+        let max_config = r#"
+        [app]
+        name = "Max Values Test"
+        version = "999.999.999"
+        debug = true
+
+        [database]
+        host = "very-long-hostname-that-is-still-valid.example.com"
+        port = 65535
+        username = "very_long_username_that_might_be_used_in_some_systems"
+        password = "very_long_password_with_special_chars_!@#$%^&*()_+-=[]{}|;':\",./<>?"
+        database = "very_long_database_name_that_exceeds_normal_expectations"
+
+        [features]
+        enabled = ["feature1", "feature2", "feature3", "feature4", "feature5"]
+
+        [cache]
+        ttl = 9223372036854775807
+        max_size = 9223372036854775807
+        "#;
+        
+        reader.add_file("max.toml", max_config.to_string()).unwrap();
+        
+        let provider = LingoFileProviderGeneric::new(
+            std::path::Path::new("max.toml"),
+            FileFormat::Toml,
+            true,
+            10,
+            reader.clone(),
+        );
+        
+        let config: AppConfig = Figment::new()
+            .merge(provider)
+            .extract()
+            .expect("Max values should be parseable");
+        
+        assert_eq!(config.database.port, 65535);
+        assert_eq!(config.cache.ttl, i64::MAX as u64);
+        assert_eq!(config.cache.max_size, i64::MAX as u64);
+        assert_eq!(config.features.enabled.len(), 5);
+    }
+
+    #[test]
+    fn test_memory_reader_unicode_content() {
+        let reader = MemoryFileReader::new();
+        
+        // 包含Unicode字符的配置
+        let unicode_config = r#"
+        [app]
+        name = "测试应用程序 🚀"
+        version = "1.0.0-α"
+        debug = false
+
+        [database]
+        host = "数据库.example.com"
+        port = 3306
+        username = "用户名"
+        password = "密码123"
+        database = "数据库名称"
+
+        [features]
+        enabled = ["功能1", "功能2", "测试功能"]
+
+        [cache]
+        ttl = 3600
+        max_size = 1024
+        "#;
+        
+        reader.add_file("unicode.toml", unicode_config.to_string()).unwrap();
+        
+        let provider = LingoFileProviderGeneric::new(
+            std::path::Path::new("unicode.toml"),
+            FileFormat::Toml,
+            true,
+            10,
+            reader.clone(),
+        );
+        
+        let config: AppConfig = Figment::new()
+            .merge(provider)
+            .extract()
+            .expect("Unicode content should be parseable");
+        
+        assert_eq!(config.app.name, "测试应用程序 🚀");
+        assert_eq!(config.database.host, "数据库.example.com");
+        assert!(config.features.enabled.contains(&"功能1".to_string()));
+    }
+
+    #[test]
+    fn test_memory_reader_dynamic_file_operations() {
+        let reader = MemoryFileReader::new();
+        
+        // 测试动态添加、修改、删除文件
+        let initial_config = r#"
+        [app]
+        name = "Initial Config"
+        version = "1.0.0"
+        debug = false
+
+        [database]
+        host = "localhost"
+        port = 5432
+        username = "user"
+        password = "pass"
+        database = "mydb"
+
+        [features]
+        enabled = ["initial"]
+
+        [cache]
+        ttl = 60
+        max_size = 1024
+        "#;
+        
+        reader.add_file("dynamic.toml", initial_config.to_string()).unwrap();
+        
+        // 验证初始配置
+        let provider = LingoFileProviderGeneric::new(
+            std::path::Path::new("dynamic.toml"),
+            FileFormat::Toml,
+            true,
+            10,
+            reader.clone(),
+        );
+        
+        let config: AppConfig = Figment::new()
+            .merge(provider)
+            .extract()
+            .expect("Initial config should be parseable");
+        
+        assert_eq!(config.app.name, "Initial Config");
+        
+        // 修改配置文件
+        let updated_config = r#"
+        [app]
+        name = "Updated Config"
+        version = "2.0.0"
+        debug = true
+
+        [database]
+        host = "updated-host"
+        port = 5433
+        username = "new_user"
+        password = "new_pass"
+        database = "new_db"
+
+        [features]
+        enabled = ["updated", "new_feature"]
+
+        [cache]
+        ttl = 120
+        max_size = 2048
+        "#;
+        
+        reader.add_file("dynamic.toml", updated_config.to_string()).unwrap();
+        
+        // 验证更新后的配置
+        let updated_provider = LingoFileProviderGeneric::new(
+            std::path::Path::new("dynamic.toml"),
+            FileFormat::Toml,
+            true,
+            10,
+            reader.clone(),
+        );
+        
+        let updated_config: AppConfig = Figment::new()
+            .merge(updated_provider)
+            .extract()
+            .expect("Updated config should be parseable");
+        
+        assert_eq!(updated_config.app.name, "Updated Config");
+        assert_eq!(updated_config.app.version, "2.0.0");
+        assert_eq!(updated_config.database.host, "updated-host");
+        
+        // 删除配置文件
+        reader.remove_file("dynamic.toml").unwrap();
+        assert!(!reader.exists(std::path::Path::new("dynamic.toml")));
+        
+        // 验证删除后的文件不存在
+        let result = reader.read_content(std::path::Path::new("dynamic.toml"));
+        assert!(result.is_err());
     }
 }

@@ -8,7 +8,7 @@
 app_name = "Template Example App"
 
 # 应用程序版本
-app_version = "0.1.0"
+app_version = "0.2.0"
 
 # 运行环境: development, staging, production
 environment = "development"

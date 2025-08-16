@@ -134,6 +134,7 @@ struct FeatureConfig {
 
 /// 主应用配置
 #[derive(Config, Serialize, Deserialize, Debug)]
+#[config(env_prefix = "NESTED_")]
 struct AppConfig {
     /// 应用程序名称
     name: String,
@@ -214,11 +215,11 @@ impl Default for AppConfig {
         
         let mut monitoring_tags = HashMap::new();
         monitoring_tags.insert("service".to_string(), "nested-example".to_string());
-        monitoring_tags.insert("version".to_string(), "0.1.0".to_string());
+        monitoring_tags.insert("version".to_string(), "0.2.0".to_string());
         
         Self {
             name: "Nested Configuration Example".to_string(),
-            version: "0.1.0".to_string(),
+            version: "0.2.0".to_string(),
             environment: "development".to_string(),
             debug: true,
             
@@ -428,4 +429,42 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("[SUCCESS] 复杂嵌套配置示例运行完成！");
     
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_nested_app_config_new() {
+        // Test that we can create an AppConfig using new()
+        let config = AppConfig::new();
+        assert!(config.server.host.len() > 0, "server host should have a default value");
+        assert!(config.server.port > 0, "server port should have a valid default value");
+        assert!(config.database.host.len() > 0, "database host should have a default value");
+    }
+
+    #[test]
+    fn test_nested_app_config_default() {
+        // Test that we can create an AppConfig using Default
+        let config = AppConfig::default();
+        assert_eq!(config.server.host, "127.0.0.1");
+        assert_eq!(config.server.port, 8080);
+        assert_eq!(config.database.host, "localhost");
+    }
+
+    #[test]
+    fn test_config_serialization() {
+        // Test that the config can be serialized and deserialized
+        let config = AppConfig::default();
+        let serialized = toml::to_string(&config).expect("Should be able to serialize config");
+        assert!(serialized.contains("server"), "Serialized config should contain server section");
+        assert!(serialized.contains("database"), "Serialized config should contain database section");
+
+        // Test deserialization
+        let deserialized: AppConfig = toml::from_str(&serialized).expect("Should be able to deserialize config");
+        assert_eq!(deserialized.server.host, config.server.host);
+        assert_eq!(deserialized.server.port, config.server.port);
+        assert_eq!(deserialized.database.host, config.database.host);
+    }
 }
