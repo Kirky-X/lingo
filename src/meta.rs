@@ -361,4 +361,3 @@ mod tests {
 }
 
 // Backward compatibility alias
-pub type QuantumConfigAppMeta = QuantumConfigAppMeta;

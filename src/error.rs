@@ -252,4 +252,3 @@ mod tests {
 }
 
 // Backward compatibility alias
-pub type QuantumConfigError = QuantumConfigError;

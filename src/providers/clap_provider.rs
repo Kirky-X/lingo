@@ -393,7 +393,7 @@ pub fn with_common_mappings(matches: ArgMatches) -> QuantumConfigClapProvider {
 }
 
 // 向后兼容别名
-pub type QuantumConfigClapProvider = QuantumConfigClapProvider;
+
 
 #[cfg(test)]
 mod tests {

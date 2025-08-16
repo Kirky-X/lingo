@@ -532,5 +532,3 @@ mod tests {
 }
 
 // 向后兼容的类型别名
-pub type QuantumConfigFileProviderGeneric<R> = QuantumConfigFileProviderGeneric<R>;
-pub type QuantumConfigFileProvider = QuantumConfigFileProvider;

@@ -482,6 +482,3 @@ mod tests {
         unsafe { env::remove_var("quantum_config_PRESERVE_UPPER_KEY"); }
     }
 }
-
-/// 向后兼容性别名
-pub type QuantumConfigEnvProvider = QuantumConfigEnvProvider;
