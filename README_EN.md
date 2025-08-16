@@ -39,6 +39,131 @@ About the examples/ directory: The examples demonstrate using Quantum Config in 
 - **Async Support** - Both synchronous and asynchronous loading methods
 - **Cross-platform** - Support for Linux, macOS, and Windows
 
+## 🚀 Quick Start
+
+### Add Dependencies
+
+```toml
+[dependencies]
+quantum_config = "0.2.0"
+serde = { version = "1.0", features = ["derive"] }
+```
+
+### Basic Usage
+
+```rust
+use quantum_config::Config; // derive macro re-exported from quantum_config
+use serde::{Deserialize, Serialize};
+
+#[derive(Config, Serialize, Deserialize, Debug, Default)]
+#[config(env_prefix = "MYAPP_")]
+struct AppConfig {
+    #[quantum_config_opt(description = "Server host", default = "\"localhost\".to_string()")]
+    host: String,
+
+    #[quantum_config_opt(description = "Server port", default = "8080")]
+    port: u16,
+
+    #[quantum_config_opt(description = "Enable debug mode", name_clap_long = "debug")]
+    debug_mode: Option<bool>,
+
+    #[quantum_config_opt(flatten)]
+    database: DatabaseConfig,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+struct DatabaseConfig {
+    #[quantum_config_opt(description = "Database URL")]
+    url: Option<String>,
+
+    #[quantum_config_opt(description = "Max connections", default = "10")]
+    max_connections: u32,
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Load configuration
+    let config = AppConfig::load()?;
+
+    println!("Server will start at {}:{}", config.host, config.port);
+    println!("Debug mode: {:?}", config.debug_mode);
+
+    Ok(())
+}
+```
+
+### Configuration File Example
+
+config.toml
+```toml
+# Server host
+host = "0.0.0.0"
+# Server port
+port = 3000
+
+[database]
+# Database URL
+url = "postgresql://localhost/myapp"
+# Max connections
+max_connections = 20
+```
+
+### Environment Variables
+
+```bash
+export MYAPP_HOST="0.0.0.0"
+export MYAPP_PORT="3000"
+export MYAPP_DATABASE_URL="postgresql://localhost/myapp"
+```
+
+### Command-line Arguments
+
+```bash
+./myapp --host 0.0.0.0 --port 3000 --debug --database-url postgresql://localhost/myapp
+```
+
+## 📖 Detailed Documentation
+
+### Configuration Load Priority
+
+Quantum Config loads and merges configuration by the following priority (later overrides earlier):
+
+1. System configuration files - `/etc/{app_name}/config.{toml,json,ini}`
+2. User configuration files - `~/.config/{app_name}/config.{toml,json,ini}`
+3. Specified configuration file - via `--config` argument
+4. Environment variables - using `{ENV_PREFIX}_` prefix
+5. Command-line arguments - highest priority
+
+### Field Attribute Details
+
+#### `#[quantum_config_opt(...)]` attribute
+
+- `description = "..."` - Field description for help text and template generation
+- `default = "expr"` - Default value expression
+- `name_config = "..."` - Key name in configuration files
+- `name_env = "..."` - Environment variable name
+- `name_clap_long = "..."` - Long CLI option name
+- `name_clap_short = 'c'` - Short CLI option
+- `flatten` - Flatten nested struct
+- `skip` - Skip this field
+- `clap(...)` - Extra attributes passed to clap
+
+#### `#[config(...)]` struct attribute
+
+- `env_prefix = "PREFIX_"` - Environment variable prefix, e.g., `"MYAPP_"`
+
+### Async Support
+
+Enable the `async` feature to use async loading:
+
+```rust
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let config = AppConfig::load_async().await?;
+    // ...
+    Ok(())
+}
+```
+
 ### Configuration Template Generation
 
 ```rust
