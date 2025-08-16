@@ -20,7 +20,7 @@
       <package file="$PROJECT_DIR$">
         <enabledFeature name="default" />
       </package>
-      <package file="$PROJECT_DIR$/lingo-derive">
+      <package file="$PROJECT_DIR$/quantum_config-derive">
         <enabledFeature name="default" />
       </package>
       <package file="$PROJECT_DIR$/examples/nested">
@@ -53,7 +53,7 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/Kirky-X/lingo.git&quot;,
+    &quot;url&quot;: &quot;https://github.com/Kirky-X/quantum_config.git&quot;,
     &quot;accountId&quot;: &quot;d32a59c8-468f-4692-8e2b-01bd1cdf2985&quot;
   }
 }</component>
@@ -91,7 +91,7 @@
   }
 }</component>
   <component name="RunManager">
-    <configuration name="Test lingo" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
+    <configuration name="Test quantum_config" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
       <option name="buildProfileId" value="test" />
       <option name="command" value="test --workspace" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
@@ -137,7 +137,7 @@
       <option name="project" value="LOCAL" />
       <updated>1749573648045</updated>
     </task>
-    <task id="LOCAL-00002" summary="Initial commit: Add Lingo configuration management library">
+    <task id="LOCAL-00002" summary="Initial commit: Add QuantumConfig configuration management library">
       <option name="closed" value="true" />
       <created>1749610840654</created>
       <option name="number" value="00002" />
@@ -153,7 +153,7 @@
       <option name="project" value="LOCAL" />
       <updated>1749611620368</updated>
     </task>
-    <task id="LOCAL-00004" summary="Initial commit: Add Lingo configuration management library">
+    <task id="LOCAL-00004" summary="Initial commit: Add QuantumConfig configuration management library">
       <option name="closed" value="true" />
       <created>1749614020858</created>
       <option name="number" value="00004" />
@@ -245,7 +245,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="0.1.0 测试版本" />
     <MESSAGE value="optimize import and add unsafe surround" />
-    <MESSAGE value="Initial commit: Add Lingo configuration management library" />
+    <MESSAGE value="Initial commit: Add QuantumConfig configuration management library" />
     <MESSAGE value="optimize README" />
     <MESSAGE value="optimize README_EN" />
     <MESSAGE value="add CHANGELOG.md" />

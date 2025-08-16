@@ -81,7 +81,7 @@ name = "async-example"
 version = "0.2.0"
 dependencies = [
  "futures",
- "lingo",
+ "quantum_config",
  "reqwest",
  "serde",
  "serde_json",
@@ -183,7 +183,7 @@ checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
 name = "basic-example"
 version = "0.2.0"
 dependencies = [
- "lingo",
+ "quantum_config",
  "serde",
  "toml",
 ]
@@ -336,7 +336,7 @@ name = "custom_file_reader"
 version = "0.2.0"
 dependencies = [
  "figment",
- "lingo",
+ "quantum_config",
  "serde",
  "tokio",
 ]
@@ -345,7 +345,7 @@ dependencies = [
 name = "database-example"
 version = "0.2.0"
 dependencies = [
- "lingo",
+ "quantum_config",
  "serde",
  "tokio",
  "toml",
@@ -939,37 +939,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "lingo"
-version = "0.2.0"
-dependencies = [
- "clap",
- "directories",
- "figment",
- "lingo-derive",
- "log",
- "rust-ini",
- "serde",
- "serde_json",
- "tempfile",
- "thiserror",
- "tokio",
- "toml",
- "toml_edit",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "lingo-derive"
-version = "0.2.0"
-dependencies = [
- "proc-macro-crate",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
 name = "linux-raw-sys"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1065,7 +1034,7 @@ dependencies = [
 name = "nested-example"
 version = "0.2.0"
 dependencies = [
- "lingo",
+ "quantum_config",
  "serde",
  "serde_json",
  "toml",
@@ -1276,6 +1245,37 @@ dependencies = [
  "syn",
  "version_check",
  "yansi",
+]
+
+[[package]]
+name = "quantum_config"
+version = "0.2.0"
+dependencies = [
+ "clap",
+ "directories",
+ "figment",
+ "log",
+ "quantum_config_derive",
+ "rust-ini",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror",
+ "tokio",
+ "toml",
+ "toml_edit",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "quantum_config_derive"
+version = "0.2.0"
+dependencies = [
+ "proc-macro-crate",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -1684,7 +1684,7 @@ version = "0.2.0"
 dependencies = [
  "clap",
  "colored",
- "lingo",
+ "quantum_config",
  "serde",
  "serde_json",
  "toml",
@@ -2119,7 +2119,7 @@ name = "web-server-example"
 version = "0.2.0"
 dependencies = [
  "axum",
- "lingo",
+ "quantum_config",
  "serde",
  "serde_json",
  "tokio",

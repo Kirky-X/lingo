@@ -1,8 +1,8 @@
-//! # Lingo
+//! # Quantum Config
 //!
 //! A powerful and flexible configuration management library for Rust applications.
 //!
-//! Lingo provides a unified interface for loading configuration from multiple sources
+//! Quantum Config provides a unified interface for loading configuration from multiple sources
 //! including files, environment variables, and command-line arguments, with automatic
 //! type conversion and validation.
 //!
@@ -19,7 +19,7 @@
 //! ## Quick Start
 //!
 //! ```ignore
-//! use lingo::{Config, Deserialize, Serialize};
+//! use quantum_config::{Config, Deserialize, Serialize};
 //!
 //! #[derive(Config, Default, Deserialize, Serialize)]
 //! struct AppConfig {
@@ -44,8 +44,8 @@ pub mod providers;
 mod integration_tests;
 
 // Re-export main types
-pub use error::{ConfigDirType, LingoError};
-pub use meta::{ClapAttrsMeta, FieldMeta, LingoAppMeta, StructMeta};
+pub use error::{ConfigDirType, QuantumConfigError};
+pub use meta::{ClapAttrsMeta, FieldMeta, QuantumConfigAppMeta, StructMeta};
 pub use paths::{add_specified_config_file, resolve_config_files, ConfigFilePath, ConfigFileType};
 
 // 对外重导出 Serde 常用 traits
@@ -60,4 +60,4 @@ pub use clap::{Arg, ArgAction, ArgMatches, Command};
 pub use ::toml as toml;
 
 // 对外重导出 derive 宏
-pub use lingo_derive::Config;
+pub use quantum_config_derive::Config;

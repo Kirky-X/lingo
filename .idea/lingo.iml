@@ -5,7 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/core/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/macros/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/examples" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/lingo-derive/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/quantum_config-derive/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/examples/basic/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/examples/database/src" isTestSource="false" />

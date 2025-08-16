@@ -1,12 +1,12 @@
-# Lingo 使用示例
+# Quantum Config 使用示例
 
-这个目录包含了 Lingo 配置管理库的各种使用示例，从基础用法到高级企业级应用场景。
+这个目录包含了 Quantum Config 配置管理库的各种使用示例，从基础用法到高级企业级应用场景。
 
 ## 📁 示例目录
 
 ### [basic](./basic/) - 基础配置加载
 
-**适合人群**: 初学者，想要快速了解 Lingo 基本功能
+**适合人群**: 初学者，想要快速了解 Quantum Config 基本功能
 
 **主要特性**:
 
@@ -18,7 +18,7 @@
 **学习内容**:
 
 - `#[derive(Config)]` 宏的基本使用
-- `#[lingo_opt]` 属性的常见用法
+- `#[quantum_config_opt]` 属性的常见用法
 - 配置加载和访问
 - 配置模板生成
 
@@ -37,7 +37,7 @@
 **学习内容**:
 
 - 嵌套结构体配置
-- `#[lingo_opt(flatten)]` 的使用
+- `#[quantum_config_opt(flatten)]` 的使用
 - 与 Axum 框架的集成
 - 生产环境配置最佳实践
 
@@ -68,7 +68,7 @@
 
 根据你的需求选择相应的示例：
 
-- **刚开始学习 Lingo** → 从 `basic` 示例开始
+- **刚开始学习 Quantum Config** → 从 `basic` 示例开始
 - **开发 Web 应用** → 查看 `web_server` 示例
 - **需要数据库配置** → 参考 `database` 示例
 
@@ -115,12 +115,12 @@ cargo run -- --port 8080 --config config.toml  # 命令行 + 配置文件
 
 1. **理解基本概念**
     - 什么是配置管理
-    - Lingo 的核心理念
+    - Quantum Config 的核心理念
     - 配置优先级
 
 2. **掌握基本语法**
     - `#[derive(Config)]` 宏
-    - `#[lingo_opt]` 属性
+    - `#[quantum_config_opt]` 属性
     - 基本数据类型支持
 
 3. **配置源使用**
@@ -256,7 +256,7 @@ database:
 #[derive(Config)]
 struct AppConfig {
     // 不要在配置文件中存储密码
-    #[lingo_opt(description = "数据库密码，通过环境变量设置")]
+    #[quantum_config_opt(description = "数据库密码，通过环境变量设置")]
     database_password: Option<String>,
 }
 ```
@@ -268,7 +268,7 @@ export APP_DATABASE_PASSWORD="secret_password"
 
 ### Q: 如何实现配置热重载？
 
-**A**: 目前 Lingo 专注于启动时配置加载，热重载可以通过文件监控实现：
+**A**: 目前 Quantum Config 专注于启动时配置加载，热重载可以通过文件监控实现：
 
 ```rust
 // 伪代码示例

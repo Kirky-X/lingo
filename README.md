@@ -1,35 +1,35 @@
-# Lingo (玲珑) 🎯
+# Quantum Config (量子配置) 🎯
 
 一个强大且灵活的 Rust 配置管理库，让配置加载变得简单而优雅。
 
-[![Crates.io](https://img.shields.io/crates/v/lingo.svg)](https://crates.io/crates/lingo)
-[![Documentation](https://docs.rs/lingo/badge.svg)](https://docs.rs/lingo)
+[![Crates.io](https://img.shields.io/crates/v/quantum_config.svg)](https://crates.io/crates/quantum_config)
+[![Documentation](https://docs.rs/quantum_config/badge.svg)](https://docs.rs/quantum_config)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![Rust](https://github.com/Kirky-X/lingo/actions/workflows/rust.yml/badge.svg)](https://github.com/Kirky-X/lingo/actions/workflows/rust.yml)
+[![Rust](https://github.com/Kirky-X/quantum_config/actions/workflows/rust.yml/badge.svg)](https://github.com/Kirky-X/quantum_config/actions/workflows/rust.yml)
 
 ## 📋 项目范围
 
-**Lingo 专注于**：
+**Quantum Config 专注于**：
 - 配置文件加载、解析和类型转换
 - 多配置源合并（文件、环境变量、命令行）
 - 配置验证和错误处理
 - 开发工具（模板生成、帮助文档）
 
-**Lingo 不包含**：
+**Quantum Config 不包含**：
 - Web 服务器实现或 HTTP 功能
 - 数据库连接或 ORM 功能  
 - 缓存、消息队列等基础设施
 - 业务逻辑或应用框架
 
-**examples/ 目录说明**：示例项目展示如何在不同场景（Web 服务、数据库应用、异步程序）中使用 Lingo 进行配置管理，但这些应用本身超出了 Lingo 库的核心功能。
+**examples/ 目录说明**：示例项目展示如何在不同场景（Web 服务、数据库应用、异步程序）中使用 Quantum Config 进行配置管理，但这些应用本身超出了 Quantum Config 库的核心功能。
 
-**[English](README_EN.md)** | **[更新日志](CHANGELOG.md)** | **[文档](https://docs.rs/lingo)**
+**[English](README_EN.md)** | **[更新日志](CHANGELOG.md)** | **[文档](https://docs.rs/quantum_config)**
 
 ## 🌟 特性
 
 - **多源配置加载** - 支持 TOML、JSON、INI 文件、环境变量和命令行参数
 - **智能优先级** - 自动按优先级合并配置：系统文件 < 用户文件 < 指定文件 < 环境变量 < 命令行参数
-- **过程宏驱动** - 通过 `#[derive(Config)]` 和 `#[config(...)]`/`#[lingo_opt(...)]` 属性简化配置定义
+- **过程宏驱动** - 通过 `#[derive(Config)]` 和 `#[config(...)]`/`#[quantum_config_opt(...)]` 属性简化配置定义
 - **类型安全** - 完全的编译时类型检查，避免运行时配置错误
 - **深度集成 Clap** - 自动生成命令行参数解析，包括帮助信息和版本信息
 - **嵌套结构体** - 支持任意深度的嵌套配置结构
@@ -45,14 +45,14 @@
 
 ```toml
 [dependencies]
-lingo = "0.2.0"
+quantum_config = "0.2.0"
 serde = { version = "1.0", features = ["derive"] }
 ```
 
 ### 基本用法
 
 ```rust
-use lingo::Config; // derive 宏从 lingo 暴露
+use quantum_config::Config; // derive 宏从 quantum_config 暴露
 use serde::{Deserialize, Serialize};
 
 #[derive(Config, Serialize, Deserialize, Debug, Default)]
@@ -107,7 +107,7 @@ export MYAPP_DATABASE_URL="postgresql://localhost/myapp"
 
 ### 配置加载优先级
 
-Lingo 按以下优先级加载和合并配置（后者覆盖前者）：
+Quantum Config 按以下优先级加载和合并配置（后者覆盖前者）：
 
 1. **系统配置文件** - `/etc/{app_name}/config.{toml,json,ini}`
 2. **用户配置文件** - `~/.config/{app_name}/config.{toml,json,ini}`
@@ -117,7 +117,7 @@ Lingo 按以下优先级加载和合并配置（后者覆盖前者）：
 
 ### 字段属性详解
 
-#### `#[lingo_opt(...)]` 属性
+#### `#[quantum_config_opt(...)]` 属性
 
 - `description = "描述"` - 字段描述，用于生成帮助信息和配置模板
 - `default = "表达式"` - 默认值表达式
@@ -155,20 +155,20 @@ AppConfig::generate_template()?;
 
 ### 错误处理
 
-Lingo 提供详细的错误信息：
+QuantumConfig 提供详细的错误信息：
 
 ```rust
-use lingo::LingoError;
+use quantum_config::QuantumConfigError;
 
 match AppConfig::load() {
     Ok(config) => println!("配置加载成功: {:?}", config),
-    Err(LingoError::FileParse { format_name, path, source_error }) => {
+    Err(QuantumConfigError::FileParse { format_name, path, source_error }) => {
         eprintln!("配置文件解析错误: {} 文件 {:?} - {}", format_name, path, source_error);
     }
-    Err(LingoError::Io { source, path }) => {
+    Err(QuantumConfigError::Io { source, path }) => {
         eprintln!("IO 错误: {:?} - {}", path, source);
     }
-    Err(LingoError::Figment(figment_error)) => {
+    Err(QuantumConfigError::Figment(figment_error)) => {
         eprintln!("配置提取错误: {}", figment_error);
     }
     Err(e) => eprintln!("其他错误: {}", e),
@@ -180,7 +180,7 @@ match AppConfig::load() {
 ### 自定义配置文件路径
 
 ```rust
-use lingo::{ConfigFilePath, ConfigFileType};
+use quantum_config::{ConfigFilePath, ConfigFileType};
 
 let custom_paths = vec![
     ConfigFilePath {
@@ -213,8 +213,8 @@ let config = AppConfig::load_with_custom_paths(&custom_paths)?;
 ### 开发环境设置
 
 ```bash
-git clone https://github.com/Kirky-X/lingo.git
-cd lingo
+git clone https://github.com/Kirky-X/quantum_config.git
+cd quantum_config
 cargo test
 cargo doc --open
 ```

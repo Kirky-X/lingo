@@ -1,5 +1,5 @@
 # 数据库配置示例文件
-# 这个文件展示了 Lingo 数据库配置的所有可用选项
+# 这个文件展示了 QuantumConfig 数据库配置的所有可用选项
 
 # 主数据库配置
 db_type = "postgres"          # 数据库类型: postgres, mysql, sqlite
@@ -10,7 +10,7 @@ username = "postgres"         # 数据库用户名
 password = "secret123"        # 数据库密码
 connect_timeout = 30          # 连接超时（秒）
 query_timeout = 60            # 查询超时（秒）
-application_name = "lingo_app" # 应用程序名称
+application_name = "quantum_config_app" # 应用程序名称
 
 # 只读副本配置（读写分离）
 [replica]

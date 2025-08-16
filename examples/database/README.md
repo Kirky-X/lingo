@@ -1,6 +1,6 @@
 # Database Example
 
-This example demonstrates how to use lingo for database configuration management.
+This example demonstrates how to use quantum_config for database configuration management.
 
 ## Overview
 

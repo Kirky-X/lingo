@@ -1,6 +1,6 @@
-//! # Lingo Configuration Template Generation Example
+//! # QuantumConfig Configuration Template Generation Example
 //!
-//! This example demonstrates how to use Lingo to generate various configuration templates
+//! This example demonstrates how to use QuantumConfig to generate various configuration templates
 //! for a typical web application. It showcases:
 //!
 //! - TOML configuration file generation
@@ -10,7 +10,7 @@
 //! - Complex nested configuration structures
 //! - Production-ready configuration templates
 
-use lingo::Config;
+use quantum_config::Config;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
@@ -282,7 +282,7 @@ impl Default for TemplateConfig {
 
 #[derive(Parser, Debug)]
 #[command(name = "template-example")]
-#[command(about = "Lingo configuration template generation example")]
+#[command(about = "QuantumConfig configuration template generation example")]
 struct Args {
     /// Generate configuration file template
     #[arg(long)]
@@ -888,7 +888,7 @@ spec:
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
     
-    println!("{}", "=== Lingo Configuration Template Generation Example ===".bold().cyan());
+    println!("{}", "=== QuantumConfig Configuration Template Generation Example ===".bold().cyan());
     println!();
     
     let config_path = "config.toml";

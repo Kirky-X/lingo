@@ -1,9 +1,9 @@
-//! Lingo 路径解析模块
+//! Quantum Config 路径解析模块
 //!
 //! 实现配置文件的路径解析逻辑，根据应用程序名称和系统约定确定配置文件的查找路径。
 
-use crate::error::LingoError;
-use crate::meta::LingoAppMeta;
+use crate::error::QuantumConfigError;
+use crate::meta::QuantumConfigAppMeta;
 use std::path::PathBuf;
 
 /// 配置文件类型
@@ -77,7 +77,7 @@ impl ConfigFilePath {
 /// - `{app_name}.{ext}`
 ///
 /// 其中 `ext` 为 `toml`, `json`, `ini`
-pub fn resolve_config_files(app_meta: &LingoAppMeta) -> Result<Vec<ConfigFilePath>, LingoError> {
+pub fn resolve_config_files(app_meta: &QuantumConfigAppMeta) -> Result<Vec<ConfigFilePath>, QuantumConfigError> {
     let mut config_files = Vec::new();
     let app_name = &app_meta.app_name;
 
@@ -117,7 +117,7 @@ pub fn resolve_config_files(app_meta: &LingoAppMeta) -> Result<Vec<ConfigFilePat
 /// 返回按优先级排序的配置目录列表（低优先级在前）：
 /// 1. 系统级配置目录
 /// 2. 用户级配置目录
-fn get_config_directories(app_name: &str) -> Result<Vec<PathBuf>, LingoError> {
+fn get_config_directories(app_name: &str) -> Result<Vec<PathBuf>, QuantumConfigError> {
     let mut dirs = Vec::new();
 
     // 使用 directories crate 获取标准配置目录
@@ -148,7 +148,7 @@ fn get_config_directories(app_name: &str) -> Result<Vec<PathBuf>, LingoError> {
             dirs.push(user_config_dir.to_path_buf());
         }
     } else {
-        return Err(LingoError::ConfigDirNotFound {
+        return Err(QuantumConfigError::ConfigDirNotFound {
             dir_type: crate::error::ConfigDirType::User,
             expected_path: None,
         });
@@ -156,7 +156,7 @@ fn get_config_directories(app_name: &str) -> Result<Vec<PathBuf>, LingoError> {
 
     // 如果没有找到任何配置目录，返回错误
     if dirs.is_empty() {
-        return Err(LingoError::NoConfigFilesFoundInDir {
+        return Err(QuantumConfigError::NoConfigFilesFoundInDir {
             dir_type: crate::error::ConfigDirType::User,
             path: std::path::PathBuf::from(format!("No valid config directories found for app: {}", app_name)),
         });
@@ -171,17 +171,17 @@ fn get_config_directories(app_name: &str) -> Result<Vec<PathBuf>, LingoError> {
 pub fn add_specified_config_file(
     config_files: &mut Vec<ConfigFilePath>,
     file_path: PathBuf,
-) -> Result<(), LingoError> {
+) -> Result<(), QuantumConfigError> {
     // 检查文件是否存在
     if !file_path.exists() {
-        return Err(LingoError::SpecifiedFileNotFound {
+        return Err(QuantumConfigError::SpecifiedFileNotFound {
             path: file_path,
         });
     }
 
     // 检查是否为文件
     if !file_path.is_file() {
-        return Err(LingoError::SpecifiedFileNotFound {
+        return Err(QuantumConfigError::SpecifiedFileNotFound {
             path: file_path,
         });
     }
@@ -191,7 +191,7 @@ pub fn add_specified_config_file(
         .extension()
         .and_then(|ext| ext.to_str())
         .and_then(ConfigFileType::from_extension)
-        .ok_or_else(|| LingoError::UnsupportedFormat {
+        .ok_or_else(|| QuantumConfigError::UnsupportedFormat {
             path: file_path.clone(),
         })?;
 
@@ -254,7 +254,7 @@ mod tests {
 
     #[test]
     fn test_resolve_config_files_with_app_meta() {
-        let app_meta = LingoAppMeta {
+        let app_meta = QuantumConfigAppMeta {
             app_name: "test_app".to_string(),
             env_prefix: None,
             behavior_version: 1,
@@ -305,7 +305,7 @@ mod tests {
 
         assert!(result.is_err());
         match result.unwrap_err() {
-            LingoError::SpecifiedFileNotFound { path } => {
+            QuantumConfigError::SpecifiedFileNotFound { path } => {
                 assert_eq!(path, non_existent);
             }
             _ => panic!("Expected SpecifiedFileNotFound error"),
@@ -324,7 +324,7 @@ mod tests {
 
         assert!(result.is_err());
         match result.unwrap_err() {
-            LingoError::UnsupportedFormat { path } => {
+            QuantumConfigError::UnsupportedFormat { path } => {
                 assert_eq!(path, temp_file);
                 // 不支持的格式错误已正确触发
             }
@@ -370,7 +370,7 @@ mod tests {
 
     #[test]
     fn test_resolve_config_files_empty_app_name() {
-        let app_meta = LingoAppMeta {
+        let app_meta = QuantumConfigAppMeta {
             app_name: "".to_string(),
             env_prefix: None,
             behavior_version: 1,
@@ -384,7 +384,7 @@ mod tests {
             Ok(_) => {
                 // 如果成功，那也是可以接受的
             }
-            Err(LingoError::ConfigDirNotFound { dir_type: _, expected_path: _ }) => {
+            Err(QuantumConfigError::ConfigDirNotFound { dir_type: _, expected_path: _ }) => {
                 // 配置目录未找到错误是可以接受的
             }
             Err(_) => {

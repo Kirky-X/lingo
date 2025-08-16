@@ -1,5 +1,5 @@
-use lingo::providers::{FileReader, LingoFileProviderGeneric, file_provider::FileFormat};
-use lingo::LingoError;
+use quantum_config::providers::{FileReader, QuantumConfigFileProviderGeneric, file_provider::FileFormat};
+use quantum_config::QuantumConfigError;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::Path;
@@ -22,10 +22,10 @@ impl MemoryFileReader {
     }
 
     /// 向内存文件系统添加文件
-    pub fn add_file<P: AsRef<Path>>(&self, path: P, content: String) -> Result<(), LingoError> {
+    pub fn add_file<P: AsRef<Path>>(&self, path: P, content: String) -> Result<(), QuantumConfigError> {
         let path_str = path.as_ref().to_string_lossy().to_string();
         let mut files = self.files.lock().map_err(|_| {
-            LingoError::Io {
+            QuantumConfigError::Io {
                 source: std::io::Error::new(
                     std::io::ErrorKind::Other,
                     "Failed to acquire lock on memory files",
@@ -38,10 +38,10 @@ impl MemoryFileReader {
     }
 
     /// 从内存文件系统移除文件
-    pub fn remove_file<P: AsRef<Path>>(&self, path: P) -> Result<(), LingoError> {
+    pub fn remove_file<P: AsRef<Path>>(&self, path: P) -> Result<(), QuantumConfigError> {
         let path_str = path.as_ref().to_string_lossy().to_string();
         let mut files = self.files.lock().map_err(|_| {
-            LingoError::Io {
+            QuantumConfigError::Io {
                 source: std::io::Error::new(
                     std::io::ErrorKind::Other,
                     "Failed to acquire lock on memory files",
@@ -54,9 +54,9 @@ impl MemoryFileReader {
     }
 
     /// 列出所有文件
-    pub fn list_files(&self) -> Result<Vec<String>, LingoError> {
+    pub fn list_files(&self) -> Result<Vec<String>, QuantumConfigError> {
         let files = self.files.lock().map_err(|_| {
-            LingoError::Io {
+            QuantumConfigError::Io {
                 source: std::io::Error::new(
                     std::io::ErrorKind::Other,
                     "Failed to acquire lock on memory files",
@@ -70,10 +70,10 @@ impl MemoryFileReader {
 
 /// 实现 FileReader trait
 impl FileReader for MemoryFileReader {
-    fn read_content(&self, path: &Path) -> Result<String, LingoError> {
+    fn read_content(&self, path: &Path) -> Result<String, QuantumConfigError> {
         let path_str = path.to_string_lossy().to_string();
         let files = self.files.lock().map_err(|_| {
-            LingoError::Io {
+            QuantumConfigError::Io {
                 source: std::io::Error::new(
                     std::io::ErrorKind::Other,
                     "Failed to acquire lock on memory files",
@@ -83,7 +83,7 @@ impl FileReader for MemoryFileReader {
         })?;
         
         files.get(&path_str).cloned().ok_or_else(|| {
-            LingoError::Io {
+            QuantumConfigError::Io {
                 source: std::io::Error::new(
                     std::io::ErrorKind::NotFound,
                     format!("File not found in memory: {}", path_str),
@@ -141,7 +141,7 @@ struct CacheConfig {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("🚀 Lingo Custom File Reader Example");
+    println!("🚀 QuantumConfig Custom File Reader Example");
     println!("=====================================\n");
 
     // 创建内存文件读取器
@@ -190,8 +190,8 @@ timeout = 30
     }
     println!();
 
-    // 创建使用自定义文件读取器的 Lingo 提供者
-    let provider = LingoFileProviderGeneric::new(
+    // 创建使用自定义文件读取器的 Quantum Config 提供者
+    let provider = QuantumConfigFileProviderGeneric::new(
         std::path::Path::new("config.toml"),
         FileFormat::Toml,
         true, // is_required
@@ -228,7 +228,7 @@ timeout = 30
 
     // 演示错误处理
     println!("❌ Testing error handling:");
-    let nonexistent_provider = LingoFileProviderGeneric::new(
+    let nonexistent_provider = QuantumConfigFileProviderGeneric::new(
         std::path::Path::new("nonexistent.toml"),
         FileFormat::Toml,
         true, // is_required
@@ -292,7 +292,7 @@ mod tests {
     #[test]
     fn test_config_extract_from_memory_reader() {
         let memory_reader = MemoryFileReader::new();
-        let provider = LingoFileProviderGeneric::new(
+        let provider = QuantumConfigFileProviderGeneric::new(
             std::path::Path::new("config.toml"),
             FileFormat::Toml,
             true,
@@ -380,11 +380,11 @@ mod tests {
         assert!(result.is_err());
         
         match result.unwrap_err() {
-            LingoError::Io { source, path } => {
+            QuantumConfigError::Io { source, path } => {
                 assert_eq!(source.kind(), std::io::ErrorKind::NotFound);
                 assert_eq!(path, std::path::PathBuf::from("nonexistent.toml"));
             },
-            _ => panic!("Expected LingoError::Io with NotFound error kind"),
+             _ => panic!("Expected QuantumConfigError::Io with NotFound error kind"),
         }
     }
 
@@ -400,7 +400,7 @@ mod tests {
         assert_eq!(content, "");
         
         // 尝试解析空配置文件应该失败
-        let provider = LingoFileProviderGeneric::new(
+        let provider = QuantumConfigFileProviderGeneric::new(
             std::path::Path::new("empty.toml"),
             FileFormat::Toml,
             true,
@@ -425,7 +425,7 @@ mod tests {
         
         reader.add_file("invalid.toml", invalid_toml.to_string()).unwrap();
         
-        let provider = LingoFileProviderGeneric::new(
+        let provider = QuantumConfigFileProviderGeneric::new(
             std::path::Path::new("invalid.toml"),
             FileFormat::Toml,
             true,
@@ -451,7 +451,7 @@ mod tests {
         
         reader.add_file("partial.toml", partial_config.to_string()).unwrap();
         
-        let provider = LingoFileProviderGeneric::new(
+        let provider = QuantumConfigFileProviderGeneric::new(
             std::path::Path::new("partial.toml"),
             FileFormat::Toml,
             true,
@@ -491,7 +491,7 @@ mod tests {
         
         reader.add_file("boundary.toml", boundary_config.to_string()).unwrap();
         
-        let provider = LingoFileProviderGeneric::new(
+        let provider = QuantumConfigFileProviderGeneric::new(
             std::path::Path::new("boundary.toml"),
             FileFormat::Toml,
             true,
@@ -539,7 +539,7 @@ mod tests {
         
         reader.add_file("max.toml", max_config.to_string()).unwrap();
         
-        let provider = LingoFileProviderGeneric::new(
+        let provider = QuantumConfigFileProviderGeneric::new(
             std::path::Path::new("max.toml"),
             FileFormat::Toml,
             true,
@@ -586,7 +586,7 @@ mod tests {
         
         reader.add_file("unicode.toml", unicode_config.to_string()).unwrap();
         
-        let provider = LingoFileProviderGeneric::new(
+        let provider = QuantumConfigFileProviderGeneric::new(
             std::path::Path::new("unicode.toml"),
             FileFormat::Toml,
             true,
@@ -633,7 +633,7 @@ mod tests {
         reader.add_file("dynamic.toml", initial_config.to_string()).unwrap();
         
         // 验证初始配置
-        let provider = LingoFileProviderGeneric::new(
+        let provider = QuantumConfigFileProviderGeneric::new(
             std::path::Path::new("dynamic.toml"),
             FileFormat::Toml,
             true,
@@ -673,7 +673,7 @@ mod tests {
         reader.add_file("dynamic.toml", updated_config.to_string()).unwrap();
         
         // 验证更新后的配置
-        let updated_provider = LingoFileProviderGeneric::new(
+        let updated_provider = QuantumConfigFileProviderGeneric::new(
             std::path::Path::new("dynamic.toml"),
             FileFormat::Toml,
             true,

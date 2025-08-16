@@ -3,7 +3,7 @@
 //! 此模块实现了从环境变量读取数据的 figment Provider。
 //! 支持前缀过滤、分隔符配置和嵌套键构造。
 
-use crate::error::LingoError;
+use crate::error::QuantumConfigError;
 use figment::{value::{Map, Value}, Error, Metadata, Profile, Provider};
 use std::collections::HashMap;
 use std::env;
@@ -12,7 +12,7 @@ use std::env;
 ///
 /// 从环境变量读取配置数据，支持前缀过滤和嵌套键构造。
 #[derive(Debug, Clone)]
-pub struct LingoEnvProvider {
+pub struct QuantumConfigEnvProvider {
     /// 环境变量前缀（例如 "MYAPP_"）
     prefix: String,
     /// 分隔符，用于构造嵌套键（例如 "__" 或 "_"）
@@ -23,7 +23,7 @@ pub struct LingoEnvProvider {
     lowercase_keys: bool,
 }
 
-impl LingoEnvProvider {
+impl QuantumConfigEnvProvider {
     /// 创建新的环境变量提供者
     ///
     /// # Arguments
@@ -64,7 +64,7 @@ impl LingoEnvProvider {
     }
 
     /// 读取并处理环境变量
-    fn read_env_vars(&self) -> Result<Map<String, Value>, LingoError> {
+    fn read_env_vars(&self) -> Result<Map<String, Value>, QuantumConfigError> {
         let mut env_map = Map::new();
 
         // 获取所有环境变量
@@ -109,7 +109,7 @@ impl LingoEnvProvider {
         map: &mut Map<String, Value>,
         key: &str,
         value: String,
-    ) -> Result<(), LingoError> {
+    ) -> Result<(), QuantumConfigError> {
         let parts: Vec<&str> = key.split(&self.separator).collect();
 
         if parts.is_empty() {
@@ -145,7 +145,7 @@ impl LingoEnvProvider {
                 }
                 Some(_) => {
                     // 如果已存在的值不是字典，返回错误
-                    return Err(LingoError::Internal(
+                    return Err(QuantumConfigError::Internal(
                         format!(
                             "Environment variable key conflict: '{}' cannot be both a value and a nested object",
                             part
@@ -154,7 +154,7 @@ impl LingoEnvProvider {
                 }
                 None => {
                     // 这种情况不应该发生，因为我们刚刚插入了值
-                    return Err(LingoError::Internal(
+                    return Err(QuantumConfigError::Internal(
                         "Unexpected error during nested key insertion".to_string()
                     ));
                 }
@@ -172,7 +172,7 @@ impl LingoEnvProvider {
     /// 解析环境变量值
     ///
     /// 尝试将字符串值解析为适当的类型（布尔值、数字或字符串）
-    fn parse_env_value(&self, value: String) -> Result<Value, LingoError> {
+    fn parse_env_value(&self, value: String) -> Result<Value, QuantumConfigError> {
         let tag = figment::value::Tag::Default;
 
         // 尝试解析为布尔值
@@ -202,9 +202,9 @@ impl LingoEnvProvider {
     }
 }
 
-impl Provider for LingoEnvProvider {
+impl Provider for QuantumConfigEnvProvider {
     fn metadata(&self) -> Metadata {
-        Metadata::named(format!("Lingo Environment Provider (prefix: {})", self.prefix))
+        Metadata::named(format!("Quantum Config Environment Provider (prefix: {})", self.prefix))
     }
 
     fn data(&self) -> Result<Map<Profile, Map<String, Value>>, Error> {
@@ -224,8 +224,8 @@ mod tests {
     use std::env;
 
     #[test]
-    fn test_lingo_env_provider_new() {
-        let provider = LingoEnvProvider::new("TEST_", "__", true, true);
+    fn test_quantum_config_env_provider_new() {
+        let provider = QuantumConfigEnvProvider::new("TEST_", "__", true, true);
 
         assert_eq!(provider.prefix, "TEST_");
         assert_eq!(provider.separator, "__");
@@ -234,8 +234,8 @@ mod tests {
     }
 
     #[test]
-    fn test_lingo_env_provider_with_prefix() {
-        let provider = LingoEnvProvider::with_prefix("MYAPP_");
+    fn test_quantum_config_env_provider_with_prefix() {
+        let provider = QuantumConfigEnvProvider::with_prefix("MYAPP_");
 
         assert_eq!(provider.prefix, "MYAPP_");
         assert_eq!(provider.separator, "__");
@@ -245,7 +245,7 @@ mod tests {
 
     #[test]
     fn test_parse_env_value_boolean() {
-        let provider = LingoEnvProvider::with_prefix("TEST_");
+        let provider = QuantumConfigEnvProvider::with_prefix("TEST_");
 
         // 测试 true 值
         let true_values = ["true", "TRUE", "1", "yes", "YES", "on", "ON"];
@@ -270,7 +270,7 @@ mod tests {
 
     #[test]
     fn test_parse_env_value_numbers() {
-        let provider = LingoEnvProvider::with_prefix("TEST_");
+        let provider = QuantumConfigEnvProvider::with_prefix("TEST_");
 
         // 测试整数
         let result = provider.parse_env_value("42".to_string()).unwrap();
@@ -289,7 +289,7 @@ mod tests {
 
     #[test]
     fn test_parse_env_value_string() {
-        let provider = LingoEnvProvider::with_prefix("TEST_");
+        let provider = QuantumConfigEnvProvider::with_prefix("TEST_");
 
         let result = provider.parse_env_value("hello world".to_string()).unwrap();
         match result {
@@ -300,7 +300,7 @@ mod tests {
 
     #[test]
     fn test_insert_nested_value_simple() {
-        let provider = LingoEnvProvider::with_prefix("TEST_");
+        let provider = QuantumConfigEnvProvider::with_prefix("TEST_");
         let mut map = Map::new();
 
         provider.insert_nested_value(&mut map, "key", "value".to_string()).unwrap();
@@ -314,7 +314,7 @@ mod tests {
 
     #[test]
     fn test_insert_nested_value_nested() {
-        let provider = LingoEnvProvider::with_prefix("TEST_");
+        let provider = QuantumConfigEnvProvider::with_prefix("TEST_");
         let mut map = Map::new();
 
         provider.insert_nested_value(&mut map, "section__key", "value".to_string()).unwrap();
@@ -334,7 +334,7 @@ mod tests {
 
     #[test]
     fn test_insert_nested_value_deep_nesting() {
-        let provider = LingoEnvProvider::with_prefix("TEST_");
+        let provider = QuantumConfigEnvProvider::with_prefix("TEST_");
         let mut map = Map::new();
 
         provider.insert_nested_value(&mut map, "a__b__c__d", "deep_value".to_string()).unwrap();
@@ -367,7 +367,7 @@ mod tests {
 
     #[test]
     fn test_insert_nested_value_conflict() {
-        let provider = LingoEnvProvider::with_prefix("TEST_");
+        let provider = QuantumConfigEnvProvider::with_prefix("TEST_");
         let mut map = Map::new();
 
         // 先插入一个简单值
@@ -378,21 +378,21 @@ mod tests {
         assert!(result.is_err());
 
         match result.unwrap_err() {
-            LingoError::Internal(message) => {
+            QuantumConfigError::Internal(message) => {
                 assert!(message.contains("key conflict"));
             }
             _ => panic!("Expected Internal error for key conflict"),
         }
-    }
+     }
 
-    #[test]
+     #[test]
     fn test_read_env_vars_with_prefix() {
-        let provider = LingoEnvProvider::with_prefix("LINGO_TEST_");
+        let provider = QuantumConfigEnvProvider::with_prefix("quantum_config_TEST_");
 
         // 设置测试环境变量
-        unsafe { env::set_var("LINGO_TEST_KEY1", "value1"); }
-        unsafe { env::set_var("LINGO_TEST_KEY2", "42"); }
-        unsafe { env::set_var("LINGO_TEST_NESTED__KEY", "nested_value"); }
+        unsafe { env::set_var("quantum_config_TEST_KEY1", "value1"); }
+        unsafe { env::set_var("quantum_config_TEST_KEY2", "42"); }
+        unsafe { env::set_var("quantum_config_TEST_NESTED__KEY", "nested_value"); }
         unsafe { env::set_var("OTHER_KEY", "should_be_ignored"); }
 
         let result = provider.read_env_vars().unwrap();
@@ -404,19 +404,19 @@ mod tests {
         assert!(!result.contains_key("other_key")); // 应该被忽略
 
         // 清理环境变量
-        unsafe { env::remove_var("LINGO_TEST_KEY1"); }
-        unsafe { env::remove_var("LINGO_TEST_KEY2"); }
-        unsafe { env::remove_var("LINGO_TEST_NESTED__KEY"); }
+        unsafe { env::remove_var("quantum_config_TEST_KEY1"); }
+        unsafe { env::remove_var("quantum_config_TEST_KEY2"); }
+        unsafe { env::remove_var("quantum_config_TEST_NESTED__KEY"); }
         unsafe { env::remove_var("OTHER_KEY"); }
     }
 
     #[test]
     fn test_ignore_empty_values() {
-        let provider = LingoEnvProvider::new("LINGO_EMPTY_", "__", true, true);
+        let provider = QuantumConfigEnvProvider::new("quantum_config_EMPTY_", "__", true, true);
 
         // 设置空值环境变量
-        unsafe { env::set_var("LINGO_EMPTY_KEY1", ""); }
-        unsafe { env::set_var("LINGO_EMPTY_KEY2", "not_empty"); }
+        unsafe { env::set_var("quantum_config_EMPTY_KEY1", ""); }
+        unsafe { env::set_var("quantum_config_EMPTY_KEY2", "not_empty"); }
 
         let result = provider.read_env_vars().unwrap();
 
@@ -425,17 +425,17 @@ mod tests {
         assert!(result.contains_key("key2"));
 
         // 清理环境变量
-        unsafe { env::remove_var("LINGO_EMPTY_KEY1"); }
-        unsafe { env::remove_var("LINGO_EMPTY_KEY2"); }
+        unsafe { env::remove_var("quantum_config_EMPTY_KEY1"); }
+        unsafe { env::remove_var("quantum_config_EMPTY_KEY2"); }
     }
 
     #[test]
     fn test_dont_ignore_empty_values() {
-        let provider = LingoEnvProvider::new("LINGO_NOEMPTY_", "__", false, true);
+        let provider = QuantumConfigEnvProvider::new("quantum_config_NOEMPTY_", "__", false, true);
 
         // 设置空值环境变量
-        unsafe { env::set_var("LINGO_NOEMPTY_KEY1", ""); }
-        unsafe { env::set_var("LINGO_NOEMPTY_KEY2", "not_empty"); }
+        unsafe { env::set_var("quantum_config_NOEMPTY_KEY1", ""); }
+        unsafe { env::set_var("quantum_config_NOEMPTY_KEY2", "not_empty"); }
 
         let result = provider.read_env_vars().unwrap();
 
@@ -444,16 +444,16 @@ mod tests {
         assert!(result.contains_key("key2"));
 
         // 清理环境变量
-        unsafe { env::remove_var("LINGO_NOEMPTY_KEY1"); }
-        unsafe { env::remove_var("LINGO_NOEMPTY_KEY2"); }
+        unsafe { env::remove_var("quantum_config_NOEMPTY_KEY1"); }
+        unsafe { env::remove_var("quantum_config_NOEMPTY_KEY2"); }
     }
 
     #[test]
     fn test_lowercase_keys() {
-        let provider = LingoEnvProvider::new("LINGO_CASE_", "__", true, true);
+        let provider = QuantumConfigEnvProvider::new("quantum_config_CASE_", "__", true, true);
 
         // 设置大写键名的环境变量
-        unsafe { env::set_var("LINGO_CASE_UPPER_KEY", "value"); }
+        unsafe { env::set_var("quantum_config_CASE_UPPER_KEY", "value"); }
 
         let result = provider.read_env_vars().unwrap();
 
@@ -462,15 +462,15 @@ mod tests {
         assert!(!result.contains_key("UPPER_KEY"));
 
         // 清理环境变量
-        unsafe { env::remove_var("LINGO_CASE_UPPER_KEY"); }
+        unsafe { env::remove_var("quantum_config_CASE_UPPER_KEY"); }
     }
 
     #[test]
     fn test_preserve_case_keys() {
-        let provider = LingoEnvProvider::new("LINGO_PRESERVE_", "__", true, false);
+        let provider = QuantumConfigEnvProvider::new("quantum_config_PRESERVE_", "__", true, false);
 
         // 设置大写键名的环境变量
-        unsafe { env::set_var("LINGO_PRESERVE_UPPER_KEY", "value"); }
+        unsafe { env::set_var("quantum_config_PRESERVE_UPPER_KEY", "value"); }
 
         let result = provider.read_env_vars().unwrap();
 
@@ -479,6 +479,9 @@ mod tests {
         assert!(!result.contains_key("upper_key"));
 
         // 清理环境变量
-        unsafe { env::remove_var("LINGO_PRESERVE_UPPER_KEY"); }
+        unsafe { env::remove_var("quantum_config_PRESERVE_UPPER_KEY"); }
     }
 }
+
+/// 向后兼容性别名
+pub type QuantumConfigEnvProvider = QuantumConfigEnvProvider;

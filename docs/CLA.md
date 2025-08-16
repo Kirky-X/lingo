@@ -2,13 +2,13 @@
 
 ## 概述
 
-感谢您对 **lingo** 项目的贡献！为了确保知识产权的清晰性和项目的长期可持续性，我们要求所有贡献者在提交代码之前签署本贡献者许可协议（CLA）。
+感谢您对 **quantum_config** 项目的贡献！为了确保知识产权的清晰性和项目的长期可持续性，我们要求所有贡献者在提交代码之前签署本贡献者许可协议（CLA）。
 
 ## 定义
 
 - **"您"**：是指提交贡献的个人或法人实体
 - **"贡献"**：是指您提交给项目的任何源代码、文档或其他创作作品，包括但不限于修改、增强、错误修复等
-- **"项目"**：是指 lingo 配置库项目及其相关组件
+- **"项目"**：是指 quantum_config 配置库项目及其相关组件
 
 ## 许可授权
 
@@ -58,7 +58,7 @@
 ## 联系信息
 
 如对本 CLA 有任何疑问，请通过以下方式联系项目维护者：
-- **GitHub Issues**：[lingo Issues](https://github.com/Kirky-X/lingo/issues)
+- **GitHub Issues**：[quantum_config Issues](https://github.com/Kirky-X/quantum_config/issues)
 - **Email**：Kirky-X@outlook.com
 
 ---

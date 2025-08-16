@@ -1,12 +1,12 @@
-//! # Lingo 异步配置加载示例
+//! # Quantum Config 异步配置加载示例
 //!
-//! 这个示例展示了如何在异步环境中使用 Lingo 进行配置管理，包括：
+//! 这个示例展示了如何在异步环境中使用 Quantum Config 进行配置管理，包括：
 //! - 异步应用程序中的配置加载
 //! - 配置热重载和监听
 //! - 异步任务中的配置使用
 //! - 配置变更的响应式处理
 
-use lingo::Config;
+use quantum_config::Config;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::sync::Arc;
@@ -126,7 +126,7 @@ impl Default for AsyncAppConfig {
                 timeout: 30,
                 max_retries: 3,
                 retry_interval: 1000,
-                user_agent: "lingo-async-example".to_string(),
+                user_agent: "quantum_config-async-example".to_string(),
                 compression: true,
             },
             
@@ -598,7 +598,7 @@ fn validate_config(config: &AsyncAppConfig) {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    println!("=== Lingo 异步配置加载示例 ===\n");
+    println!("=== QuantumConfig 异步配置加载示例 ===\n");
     
     // 创建并启动异步应用
     let app = AsyncApp::new().await;

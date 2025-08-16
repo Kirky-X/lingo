@@ -3,7 +3,7 @@
 //! 测试 derive 宏在复杂场景下的行为，包括嵌套结构、flatten 字段、
 //! 多源配置合并等功能的正确性验证。
 
-use lingo_derive::Config;
+use quantum_config_derive::Config;
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::fs;

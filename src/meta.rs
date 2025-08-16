@@ -1,4 +1,4 @@
-//! Lingo 元数据结构模块
+//! Quantum Config 元数据结构模块
 //!
 //! 定义了用于在运行时表示从编译时收集的配置信息的数据结构。
 
@@ -6,18 +6,18 @@ use std::collections::HashMap;
 
 /// 应用程序级别的元数据
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct LingoAppMeta {
+pub struct QuantumConfigAppMeta {
     /// 应用程序的名称
     pub app_name: String,
     /// 全局环境变量前缀
     pub env_prefix: Option<String>,
     /// 宏行为版本（内部语义版本，随库版本演进）
     pub behavior_version: u32,
-    /// 配置文件解析深度限制（由内部默认策略与 LingoFileProvider 控制）
+    /// 配置文件解析深度限制（由内部默认策略与 QuantumConfigFileProvider 控制）
     pub max_parse_depth: u32,
 }
 
-impl Default for LingoAppMeta {
+impl Default for QuantumConfigAppMeta {
     fn default() -> Self {
         Self {
             app_name: "app".to_string(),
@@ -48,15 +48,15 @@ pub struct ClapAttrsMeta {
 pub struct FieldMeta {
     /// 字段在 Rust 结构体中的原始名称
     pub rust_name: &'static str,
-    /// 来自 #[lingo_opt(name_config = "...")] 的值
+    /// 来自 #[config(name_config = "...")] 的值
     pub config_name_override: Option<&'static str>,
-    /// 来自 #[lingo_opt(name_env = "...")] 的值
+    /// 来自 #[config(name_env = "...")] 的值
     pub env_name_override: Option<&'static str>,
-    /// 来自 #[lingo_opt(name_clap_long = "...")] 的值
+    /// 来自 #[config(name_clap_long = "...")] 的值
     pub clap_long_override: Option<&'static str>,
-    /// 来自 #[lingo_opt(name_clap_short = '...')] 的值
+    /// 来自 #[config(name_clap_short = '...')] 的值
     pub clap_short_override: Option<char>,
-    /// 来自 #[lingo_opt(description = "...")] 的描述
+    /// 来自 #[config(description = "...")] 的描述
     pub description: Option<&'static str>,
     /// 指向宏生成的默认值函数的完整路径字符串
     pub default_fn_path_str: Option<&'static str>,
@@ -64,11 +64,11 @@ pub struct FieldMeta {
     pub type_name_str: &'static str,
     /// 标记该字段是否是 Option<T> 类型
     pub is_option: bool,
-    /// 标记该字段是否有 #[lingo_opt(flatten)]
+    /// 标记该字段是否有 #[config(flatten)]
     pub is_flatten: bool,
-    /// 标记该字段是否有 #[lingo_opt(skip)]
+    /// 标记该字段是否有 #[config(skip)]
     pub is_skipped: bool,
-    /// 结构化表示来自 #[lingo_opt(clap(...))] 的原生 clap 属性
+    /// 结构化表示来自 #[config(clap(...))] 的原生 clap 属性
     pub clap_direct_attrs_meta: Option<ClapAttrsMeta>,
 }
 
@@ -163,8 +163,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_lingo_app_meta_default() {
-        let meta = LingoAppMeta::default();
+    fn test_quantum_config_app_meta_default() {
+        let meta = QuantumConfigAppMeta::default();
         assert_eq!(meta.app_name, "app");
         assert_eq!(meta.env_prefix, None);
         assert_eq!(meta.behavior_version, 1);
@@ -172,8 +172,8 @@ mod tests {
     }
 
     #[test]
-    fn test_lingo_app_meta_custom() {
-        let meta = LingoAppMeta {
+    fn test_quantum_config_app_meta_custom() {
+        let meta = QuantumConfigAppMeta {
             app_name: "myapp".to_string(),
             env_prefix: Some("MYAPP".to_string()),
             behavior_version: 2,
@@ -359,3 +359,6 @@ mod tests {
         assert!(field.clap_direct_attrs_meta.is_some());
     }
 }
+
+// Backward compatibility alias
+pub type QuantumConfigAppMeta = QuantumConfigAppMeta;

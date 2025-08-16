@@ -4,7 +4,7 @@
 //! 支持 TOML、JSON 和 INI 格式，并提供解析深度限制。
 //! 支持自定义文件读取器，允许用户自定义文件读取行为。
 
-use crate::error::LingoError;
+use crate::error::QuantumConfigError;
 use figment::{value::{Map, Value}, Error, Metadata, Profile, Provider};
 use ini::Ini;
 use serde_json::Value as JsonValue;
@@ -43,13 +43,13 @@ impl FileFormat {
     }
 }
 
-/// Lingo 文件提供器（泛型版本）
+/// Quantum Config 文件提供器（泛型版本）
 /// 
 /// 实现了 figment Provider trait，用于从配置文件读取数据。
 /// 支持多种文件格式，并提供解析深度限制以防止资源耗尽攻击。
 /// 支持自定义文件读取器，允许用户自定义文件读取行为。
 #[derive(Debug, Clone)]
-pub struct LingoFileProviderGeneric<R: FileReader> {
+pub struct QuantumConfigFileProviderGeneric<R: FileReader> {
     /// 配置文件路径
     path: PathBuf,
     /// 文件格式
@@ -65,9 +65,9 @@ pub struct LingoFileProviderGeneric<R: FileReader> {
 /// 标准文件提供器类型别名
 /// 
 /// 使用标准文件系统读取器的文件提供器，保持向后兼容性。
-pub type LingoFileProvider = LingoFileProviderGeneric<StandardFileReader>;
+pub type QuantumConfigFileProvider = QuantumConfigFileProviderGeneric<StandardFileReader>;
 
-impl<R: FileReader> LingoFileProviderGeneric<R> {
+impl<R: FileReader> QuantumConfigFileProviderGeneric<R> {
     /// 创建新的文件提供器（泛型版本）
     ///
     /// # Arguments
@@ -93,7 +93,7 @@ impl<R: FileReader> LingoFileProviderGeneric<R> {
     }
 }
 
-impl LingoFileProvider {
+impl QuantumConfigFileProvider {
     /// 从文件路径自动推断格式创建提供者
     ///
     /// # Arguments
@@ -107,21 +107,21 @@ impl LingoFileProvider {
         path: P,
         is_required: bool,
         max_parse_depth: u32,
-    ) -> Result<Self, LingoError> {
+    ) -> Result<Self, QuantumConfigError> {
         let path_ref = path.as_ref();
         let extension = path_ref
             .extension()
             .and_then(|ext| ext.to_str())
-            .ok_or_else(|| LingoError::UnsupportedFormat {
+            .ok_or_else(|| QuantumConfigError::UnsupportedFormat {
                 path: path_ref.to_path_buf(),
             })?;
 
         let format = FileFormat::from_extension(extension)
-            .ok_or_else(|| LingoError::UnsupportedFormat {
+            .ok_or_else(|| QuantumConfigError::UnsupportedFormat {
                 path: path_ref.to_path_buf(),
             })?;
 
-        Ok(LingoFileProviderGeneric::new(
+        Ok(QuantumConfigFileProviderGeneric::new(
             path,
             format,
             is_required,
@@ -131,13 +131,13 @@ impl LingoFileProvider {
     }
 }
 
-impl<R: FileReader> LingoFileProviderGeneric<R> {
+impl<R: FileReader> QuantumConfigFileProviderGeneric<R> {
     /// 读取并解析配置文件
-    fn read_and_parse(&self) -> Result<Value, LingoError> {
+    fn read_and_parse(&self) -> Result<Value, QuantumConfigError> {
         // 检查文件是否存在
         if !self.reader.exists(&self.path) {
             if self.is_required {
-                return Err(LingoError::SpecifiedFileNotFound {
+                return Err(QuantumConfigError::SpecifiedFileNotFound {
                     path: self.path.clone(),
                 });
             } else {
@@ -154,7 +154,7 @@ impl<R: FileReader> LingoFileProviderGeneric<R> {
     }
 
     /// 解析文件内容
-    fn parse_content(&self, content: &str) -> Result<Value, LingoError> {
+    fn parse_content(&self, content: &str) -> Result<Value, QuantumConfigError> {
         match self.format {
             FileFormat::Toml => self.parse_toml(content),
             FileFormat::Json => self.parse_json(content),
@@ -163,10 +163,10 @@ impl<R: FileReader> LingoFileProviderGeneric<R> {
     }
 
     /// 解析 TOML 内容
-    fn parse_toml(&self, content: &str) -> Result<Value, LingoError> {
+    fn parse_toml(&self, content: &str) -> Result<Value, QuantumConfigError> {
         // 直接使用 toml 库解析为 JsonValue
         let parsed: JsonValue = toml::from_str(content)
-            .map_err(|e: toml::de::Error| LingoError::FileParse {
+            .map_err(|e: toml::de::Error| QuantumConfigError::FileParse {
                 path: self.path.clone(),
                 format_name: "TOML".to_string(),
                 source_error: e.to_string(),
@@ -176,9 +176,9 @@ impl<R: FileReader> LingoFileProviderGeneric<R> {
     }
 
     /// 解析 JSON 内容
-    fn parse_json(&self, content: &str) -> Result<Value, LingoError> {
+    fn parse_json(&self, content: &str) -> Result<Value, QuantumConfigError> {
         let json_value: JsonValue = serde_json::from_str(content)
-            .map_err(|e| LingoError::FileParse {
+            .map_err(|e| QuantumConfigError::FileParse {
                 path: self.path.clone(),
                 format_name: "JSON".to_string(),
                 source_error: e.to_string(),
@@ -188,9 +188,9 @@ impl<R: FileReader> LingoFileProviderGeneric<R> {
     }
 
     /// 解析 INI 内容
-    fn parse_ini(&self, content: &str) -> Result<Value, LingoError> {
+    fn parse_ini(&self, content: &str) -> Result<Value, QuantumConfigError> {
         let ini = Ini::load_from_str(content)
-            .map_err(|e| LingoError::FileParse {
+            .map_err(|e| QuantumConfigError::FileParse {
                 path: self.path.clone(),
                 format_name: "INI".to_string(),
                 source_error: e.to_string(),
@@ -258,7 +258,7 @@ impl<R: FileReader> LingoFileProviderGeneric<R> {
     }
 
     /// 将 JsonValue 转换为 figment::Value
-    fn convert_to_figment_value(&self, json_value: JsonValue) -> Result<Value, LingoError> {
+    fn convert_to_figment_value(&self, json_value: JsonValue) -> Result<Value, QuantumConfigError> {
         self.convert_json_value_recursive(json_value, 0)
     }
 
@@ -267,9 +267,9 @@ impl<R: FileReader> LingoFileProviderGeneric<R> {
         &self,
         value: JsonValue,
         depth: usize,
-    ) -> Result<Value, LingoError> {
+    ) -> Result<Value, QuantumConfigError> {
         if depth > self.max_parse_depth as usize {
-            return Err(LingoError::Internal(
+            return Err(QuantumConfigError::Internal(
                 format!(
                     "Configuration parsing depth limit ({}) exceeded in file: {}",
                     self.max_parse_depth,
@@ -316,9 +316,9 @@ impl<R: FileReader> LingoFileProviderGeneric<R> {
     }
 }
 
-impl<R: FileReader> Provider for LingoFileProviderGeneric<R> {
+impl<R: FileReader> Provider for QuantumConfigFileProviderGeneric<R> {
     fn metadata(&self) -> Metadata {
-        Metadata::named(format!("Lingo File Provider ({})", self.path.display()))
+        Metadata::named(format!("Quantum Config File Provider ({})", self.path.display()))
     }
 
     fn data(&self) -> Result<Map<Profile, Map<String, Value>>, Error> {
@@ -362,8 +362,8 @@ mod tests {
     }
 
     #[test]
-    fn test_lingo_file_provider_new() {
-        let provider = LingoFileProviderGeneric::new(
+    fn test_quantum_config_file_provider_new() {
+        let provider = QuantumConfigFileProviderGeneric::new(
             "/path/to/config.toml",
             FileFormat::Toml,
             true,
@@ -378,8 +378,8 @@ mod tests {
     }
 
     #[test]
-    fn test_lingo_file_provider_from_path_success() {
-        let result = LingoFileProvider::from_path("/path/to/config.toml", true, 100);
+    fn test_quantum_config_file_provider_from_path_success() {
+        let result = QuantumConfigFileProvider::from_path("/path/to/config.toml", true, 100);
         assert!(result.is_ok());
 
         let provider = result.unwrap();
@@ -387,12 +387,12 @@ mod tests {
     }
 
     #[test]
-    fn test_lingo_file_provider_from_path_unsupported_format() {
-        let result = LingoFileProvider::from_path("/path/to/config.txt", true, 100);
+    fn test_quantum_config_file_provider_from_path_unsupported_format() {
+        let result = QuantumConfigFileProvider::from_path("/path/to/config.txt", true, 100);
         assert!(result.is_err());
 
         match result.unwrap_err() {
-            LingoError::UnsupportedFormat { path } => {
+            QuantumConfigError::UnsupportedFormat { path } => {
                 assert_eq!(path, PathBuf::from("/path/to/config.txt"));
             }
             _ => panic!("Expected UnsupportedFormat error"),
@@ -401,7 +401,7 @@ mod tests {
 
     #[test]
     fn test_read_nonexistent_required_file() {
-        let provider = LingoFileProviderGeneric::new(
+        let provider = QuantumConfigFileProviderGeneric::new(
             "/nonexistent/config.toml",
             FileFormat::Toml,
             true,
@@ -413,7 +413,7 @@ mod tests {
         assert!(result.is_err());
 
         match result.unwrap_err() {
-            LingoError::SpecifiedFileNotFound { path } => {
+            QuantumConfigError::SpecifiedFileNotFound { path } => {
                 assert_eq!(path, PathBuf::from("/nonexistent/config.toml"));
             }
             _ => panic!("Expected SpecifiedFileNotFound error"),
@@ -422,7 +422,7 @@ mod tests {
 
     #[test]
     fn test_read_nonexistent_optional_file() {
-        let provider = LingoFileProviderGeneric::new(
+        let provider = QuantumConfigFileProviderGeneric::new(
             "/nonexistent/config.toml",
             FileFormat::Toml,
             false,
@@ -446,7 +446,7 @@ mod tests {
         let mut temp_file = NamedTempFile::new()?;
         writeln!(temp_file, r#"{{"key": "value", "number": 42}}"#)?;
 
-        let provider = LingoFileProviderGeneric::new(
+        let provider = QuantumConfigFileProviderGeneric::new(
             temp_file.path(),
             FileFormat::Json,
             true,
@@ -465,12 +465,12 @@ mod tests {
         let mut temp_file = NamedTempFile::new()?;
         writeln!(temp_file, "key = \"value\"\nnumber = 42")?;
 
-        let provider = LingoFileProviderGeneric::new(
+        let provider = QuantumConfigFileProviderGeneric::new(
             temp_file.path(),
             FileFormat::Toml,
             true,
             100,
-            StandardFileReader,
+            StandardFileReader::new(),
         );
 
         let result = provider.read_and_parse();
@@ -484,12 +484,12 @@ mod tests {
         let mut temp_file = NamedTempFile::new()?;
         writeln!(temp_file, "[section]\nkey = value\nnumber = 42")?;
 
-        let provider = LingoFileProviderGeneric::new(
+        let provider = QuantumConfigFileProviderGeneric::new(
             temp_file.path(),
             FileFormat::Ini,
             true,
             100,
-            StandardFileReader,
+            StandardFileReader::new(),
         );
 
         let result = provider.read_and_parse();
@@ -500,7 +500,7 @@ mod tests {
 
     #[test]
     fn test_depth_limit_enforcement() {
-        let provider = LingoFileProviderGeneric::new(
+        let provider = QuantumConfigFileProviderGeneric::new(
             "/path/to/config.json",
             FileFormat::Json,
             true,
@@ -523,10 +523,14 @@ mod tests {
         assert!(result.is_err());
 
         match result.unwrap_err() {
-            LingoError::Internal(message) => {
+            QuantumConfigError::Internal(message) => {
                 assert!(message.contains("depth limit"));
             }
             _ => panic!("Expected Internal error for depth limit"),
         }
     }
 }
+
+// 向后兼容的类型别名
+pub type QuantumConfigFileProviderGeneric<R> = QuantumConfigFileProviderGeneric<R>;
+pub type QuantumConfigFileProvider = QuantumConfigFileProvider;

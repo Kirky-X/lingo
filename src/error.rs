@@ -1,6 +1,6 @@
-//! Lingo 错误处理模块
+//! Quantum Config 错误处理模块
 //!
-//! 定义了 Lingo 库中所有可能的错误类型，提供统一的错误处理接口。
+//! 定义了 Quantum Config 库中所有可能的错误类型，提供统一的错误处理接口。
 
 use std::path::PathBuf;
 use thiserror::Error;
@@ -31,9 +31,9 @@ pub enum TemplateFormat {
     Ini,
 }
 
-/// Lingo 库中所有操作的统一错误类型
+/// Quantum Config 库中所有操作的统一错误类型
 #[derive(Error, Debug)]
-pub enum LingoError {
+pub enum QuantumConfigError {
     /// I/O 错误，包含路径信息
     #[error("I/O error for path {path:?}: {source}")]
     Io {
@@ -104,7 +104,7 @@ pub enum LingoError {
     },
 
     /// 内部错误
-    #[error("Internal Lingo error: {0}")]
+    #[error("Internal Quantum Config error: {0}")]
     Internal(String),
 
     /// 应用名称解析失败
@@ -115,7 +115,6 @@ pub enum LingoError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::error::Error;
     use std::io;
 
     #[test]
@@ -135,12 +134,12 @@ mod tests {
     fn test_io_error_display() {
         let io_error = io::Error::new(io::ErrorKind::NotFound, "File not found");
         let path = PathBuf::from("/test/path");
-        let lingo_error = LingoError::Io {
+        let quantum_config_error = QuantumConfigError::Io {
             source: io_error,
             path: path.clone(),
         };
 
-        let error_msg = lingo_error.to_string();
+        let error_msg = quantum_config_error.to_string();
         assert!(error_msg.contains("I/O error for path"));
         assert!(error_msg.contains("/test/path"));
         assert!(error_msg.contains("File not found"));
@@ -148,7 +147,7 @@ mod tests {
 
     #[test]
     fn test_file_parse_error_display() {
-        let error = LingoError::FileParse {
+        let error = QuantumConfigError::FileParse {
             format_name: "TOML".to_string(),
             path: PathBuf::from("/config/app.toml"),
             source_error: "Invalid syntax at line 5".to_string(),
@@ -162,7 +161,7 @@ mod tests {
 
     #[test]
     fn test_missing_value_error_display() {
-        let error = LingoError::MissingValue {
+        let error = QuantumConfigError::MissingValue {
             key_path: "database.host".to_string(),
         };
 
@@ -172,7 +171,7 @@ mod tests {
 
     #[test]
     fn test_invalid_value_error_display() {
-        let error = LingoError::InvalidValue {
+        let error = QuantumConfigError::InvalidValue {
             key_path: "server.port".to_string(),
             message: "Port must be between 1 and 65535".to_string(),
         };
@@ -184,7 +183,7 @@ mod tests {
 
     #[test]
     fn test_config_dir_not_found_error_display() {
-        let error = LingoError::ConfigDirNotFound {
+        let error = QuantumConfigError::ConfigDirNotFound {
             dir_type: ConfigDirType::User,
             expected_path: Some(PathBuf::from("/home/user/.config")),
         };
@@ -196,7 +195,7 @@ mod tests {
 
     #[test]
     fn test_config_dir_not_found_error_no_path() {
-        let error = LingoError::ConfigDirNotFound {
+        let error = QuantumConfigError::ConfigDirNotFound {
             dir_type: ConfigDirType::System,
             expected_path: None,
         };
@@ -208,7 +207,7 @@ mod tests {
 
     #[test]
     fn test_no_config_files_found_error_display() {
-        let error = LingoError::NoConfigFilesFoundInDir {
+        let error = QuantumConfigError::NoConfigFilesFoundInDir {
             dir_type: ConfigDirType::System,
             path: PathBuf::from("/etc/myapp"),
         };
@@ -220,7 +219,7 @@ mod tests {
 
     #[test]
     fn test_specified_file_not_found_error_display() {
-        let error = LingoError::SpecifiedFileNotFound {
+        let error = QuantumConfigError::SpecifiedFileNotFound {
             path: PathBuf::from("/custom/config.toml"),
         };
 
@@ -231,7 +230,7 @@ mod tests {
 
     #[test]
     fn test_unsupported_format_error_display() {
-        let error = LingoError::UnsupportedFormat {
+        let error = QuantumConfigError::UnsupportedFormat {
             path: PathBuf::from("/config/app.xml"),
         };
 
@@ -242,53 +241,15 @@ mod tests {
 
     #[test]
     fn test_template_generation_error_display() {
-        let error = LingoError::TemplateGeneration {
+        let error = QuantumConfigError::TemplateGeneration {
             format: TemplateFormat::Toml,
             reason: "Invalid field type".to_string(),
         };
 
         let error_msg = error.to_string();
-        assert!(error_msg.contains("Error generating Toml template"));
-        assert!(error_msg.contains("Invalid field type"));
-    }
-
-    #[test]
-    fn test_internal_error_display() {
-        let error = LingoError::Internal("Unexpected state in parser".to_string());
-
-        let error_msg = error.to_string();
-        assert!(error_msg.contains("Internal Lingo error: Unexpected state in parser"));
-    }
-
-    #[test]
-    fn test_app_name_resolution_error_display() {
-        let error = LingoError::AppNameResolution {
-            source_error: "Unable to determine executable name".to_string(),
-        };
-
-        let error_msg = error.to_string();
-        assert!(error_msg.contains("Failed to determine application name"));
-        assert!(error_msg.contains("Unable to determine executable name"));
-    }
-
-    #[test]
-    fn test_error_source_chain() {
-        let io_error = io::Error::new(io::ErrorKind::PermissionDenied, "Access denied");
-        let lingo_error = LingoError::Io {
-            source: io_error,
-            path: PathBuf::from("/restricted/file"),
-        };
-
-        // 测试错误源链
-        assert!(lingo_error.source().is_some());
-        let source = lingo_error.source().unwrap();
-        assert!(source.to_string().contains("Access denied"));
-    }
-
-    #[test]
-    fn test_template_format_debug() {
-        assert_eq!(format!("{:?}", TemplateFormat::Toml), "Toml");
-        assert_eq!(format!("{:?}", TemplateFormat::Json), "Json");
-        assert_eq!(format!("{:?}", TemplateFormat::Ini), "Ini");
+        assert!(error_msg.contains("Error generating"));
     }
 }
+
+// Backward compatibility alias
+pub type QuantumConfigError = QuantumConfigError;

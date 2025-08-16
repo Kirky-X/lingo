@@ -39,7 +39,7 @@ Existing applications will continue to work without changes. To benefit from val
 3. Optionally implement custom validation logic using the provided patterns
 
 ### Version 0.1.0
-This is the initial release of the lingo configuration management library. It provides a robust, type-safe, and flexible solution for managing application configuration in Rust projects.
+This is the initial release of the quantum_config configuration management library. It provides a robust, type-safe, and flexible solution for managing application configuration in Rust projects.
 
 **Key Highlights:**
 - Zero-configuration setup with sensible defaults
@@ -51,12 +51,12 @@ This is the initial release of the lingo configuration management library. It pr
 **Getting Started:**
 ```toml
 [dependencies]
-lingo = "0.2.0"
+quantum_config = "0.2.0"
 ```
 
 **Basic Usage:**
 ```rust
-use lingo::Config;
+use quantum_config::Config;
 
 #[derive(Config)]
 struct AppConfig {

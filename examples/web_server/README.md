@@ -1,6 +1,6 @@
 # Web 服务器配置示例
 
-这个示例展示了如何使用 Lingo 配置一个完整的 Web 服务器应用程序，包括复杂的嵌套配置结构和实际的 HTTP 服务器实现。
+这个示例展示了如何使用 QuantumConfig 配置一个完整的 Web 服务器应用程序，包括复杂的嵌套配置结构和实际的 HTTP 服务器实现。
 
 ## 功能特性
 
@@ -151,7 +151,7 @@ curl http://localhost:3000/api/v1/config
 ```bash
 curl -X POST http://localhost:3000/api/v1/echo \
   -H "Content-Type: application/json" \
-  -d '{"message": "Hello, Lingo!"}'
+  -d '{"message": "Hello, QuantumConfig!"}'
 ```
 
 ### 健康检查
@@ -162,7 +162,7 @@ curl http://localhost:3000/health
 
 ## 学习要点
 
-1. **嵌套配置结构**：使用 `#[lingo_opt(flatten)]` 组织复杂配置
+1. **嵌套配置结构**：使用 `#[quantum_config_opt(flatten)]` 组织复杂配置
 2. **实际应用集成**：将配置系统集成到真实的 Web 应用中
 3. **配置验证**：通过类型系统确保配置的正确性
 4. **运行时配置访问**：在应用程序中访问和使用配置

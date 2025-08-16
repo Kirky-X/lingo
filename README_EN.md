@@ -1,35 +1,34 @@
-# Lingo 🎯
+# Quantum Config
 
 A powerful and flexible Rust configuration management library that makes configuration loading simple and elegant.
 
-[![Crates.io](https://img.shields.io/crates/v/lingo.svg)](https://crates.io/crates/lingo)
-[![Documentation](https://docs.rs/lingo/badge.svg)](https://docs.rs/lingo)
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![Rust](https://github.com/Kirky-X/lingo/actions/workflows/rust.yml/badge.svg)](https://github.com/Kirky-X/lingo/actions/workflows/rust.yml)
+[![Rust](https://github.com/Kirky-X/quantum_config/actions/workflows/rust.yml/badge.svg)](https://github.com/Kirky-X/quantum_config/actions/workflows/rust.yml)
+[![Crates.io](https://img.shields.io/crates/v/quantum_config.svg)](https://crates.io/crates/quantum_config)
+[![Docs.rs](https://docs.rs/quantum_config/badge.svg)](https://docs.rs/quantum_config)
 
 ## 📋 Scope
 
-What Lingo focuses on:
+What Quantum Config focuses on:
 - Configuration loading, parsing, and type conversion
 - Merging multiple sources (files, environment variables, CLI)
 - Configuration validation and error handling
 - Developer tooling (template generation, help docs)
 
-What Lingo does not include:
+What Quantum Config does not include:
 - Web server or HTTP implementation
 - Database connections or ORM functionality
 - Infrastructure components like caches or message queues
 - Business logic or application frameworks
 
-About the examples/ directory: The examples demonstrate using Lingo in different scenarios (web service, database app, async program). These applications themselves are beyond Lingo’s core library scope.
+About the examples/ directory: The examples demonstrate using Quantum Config in different scenarios (web service, database app, async program). These applications themselves are beyond Quantum Config's core library scope.
 
-**[中文](README.md)** | **[Changelog](CHANGELOG.md)** | **[Documentation](https://docs.rs/lingo)**
+**[中文](README.md)** | **[Changelog](CHANGELOG.md)** | **[Documentation](https://docs.rs/quantum_config)**
 
 ## 🌟 Features
 
 - **Multi-source Configuration Loading** - Support for TOML, JSON, INI files, environment variables, and command-line arguments
 - **Smart Priority System** - Automatic configuration merging by priority: system files < user files < specified files < environment variables < command-line arguments
-- **Procedural Macro Driven** - Simplify configuration definition with `#[derive(Config)]`, `#[config(...)]` and `#[lingo_opt(...)]` attributes
+- **Procedural Macro Driven** - Simplify configuration definition with `#[derive(Config)]`, `#[config(...)]` and `#[quantum_config_opt(...)]` attributes
 - **Type Safety** - Complete compile-time type checking to avoid runtime configuration errors
 - **Deep Clap Integration** - Automatic command-line argument parsing with help and version information
 - **Nested Structures** - Support for arbitrarily deep nested configuration structures
@@ -43,38 +42,38 @@ About the examples/ directory: The examples demonstrate using Lingo in different
 
 ```toml
 [dependencies]
-lingo = "0.2.0"
+quantum_config = "0.2.0"
 serde = { version = "1.0", features = ["derive"] }
 ```
 
 ### Basic Usage
 
 ```rust
-use lingo::Config;
+use quantum_config::Config;
 use serde::{Deserialize, Serialize};
 
 #[derive(Config, Serialize, Deserialize, Debug, Default)]
 #[config(env_prefix = "MYAPP_")]
 struct AppConfig {
-    #[lingo_opt(description = "Server host address", default = "\"localhost\".to_string()")]
+    #[quantum_config_opt(description = "Server host address", default = "\"localhost\".to_string()")]
     host: String,
     
-    #[lingo_opt(description = "Server port", default = "8080")]
+    #[quantum_config_opt(description = "Server port", default = "8080")]
     port: u16,
     
-    #[lingo_opt(description = "Enable debug mode", name_clap_long = "debug")]
+    #[quantum_config_opt(description = "Enable debug mode", name_clap_long = "debug")]
     debug_mode: Option<bool>,
     
-    #[lingo_opt(flatten)]
+    #[quantum_config_opt(flatten)]
     database: DatabaseConfig,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 struct DatabaseConfig {
-    #[lingo_opt(description = "Database URL")]
+    #[quantum_config_opt(description = "Database URL")]
     url: Option<String>,
     
-    #[lingo_opt(description = "Maximum connections", default = "10")]
+    #[quantum_config_opt(description = "Maximum connections", default = "10")]
     max_connections: u32,
 }
 
@@ -123,7 +122,7 @@ export MYAPP_DATABASE_URL="postgresql://localhost/myapp"
 
 ### Configuration Loading Priority
 
-Lingo loads and merges configuration in the following priority order (later sources override earlier ones):
+Quantum Config loads and merges configuration in the following priority order (later sources override earlier ones):
 
 1. **System configuration files** - `/etc/{app_name}/config.{toml,json,ini}`
 2. **User configuration files** - `~/.config/{app_name}/config.{toml,json,ini}`
@@ -133,7 +132,7 @@ Lingo loads and merges configuration in the following priority order (later sour
 
 ### Field Attributes Reference
 
-#### `#[lingo_opt(...)]` Attributes
+#### `#[quantum_config_opt(...)]` Attributes
 
 - `description = "description"` - Field description for help text and config templates
 - `default = "expression"` - Default value expression
@@ -171,17 +170,17 @@ AppConfig::generate_template()?;
 
 ### Error Handling
 
-Lingo provides detailed error information:
+Quantum Config provides detailed error information:
 
 ```rust
-use lingo::LingoError;
+use quantum_config::QuantumConfigError;
 
 match AppConfig::load() {
     Ok(config) => println!("Configuration loaded successfully: {:?}", config),
-    Err(LingoError::FileParse { format_name, path, source_error }) => {
+    Err(QuantumConfigError::FileParse { format_name, path, source_error }) => {
         eprintln!("Configuration file parse error: {} file {:?} - {}", format_name, path, source_error);
     }
-    Err(LingoError::Io { source, path }) => {
+    Err(QuantumConfigError::Io { source, path }) => {
         eprintln!("IO error: {:?} - {}", path, source);
     }
     Err(e) => eprintln!("Other error: {}", e),
@@ -193,7 +192,7 @@ match AppConfig::load() {
 ### Custom Configuration File Paths
 
 ```rust
-use lingo::{ConfigFilePath, ConfigFileType};
+use quantum_config::{ConfigFilePath, ConfigFileType};
 
 let custom_paths = vec![
     ConfigFilePath {
@@ -226,8 +225,8 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for det
 ### Development Environment Setup
 
 ```bash
-git clone https://github.com/Kirky-X/lingo.git
-cd lingo
+git clone https://github.com/Kirky-X/quantum_config.git
+cd quantum_config
 cargo test
 cargo doc --open
 ```

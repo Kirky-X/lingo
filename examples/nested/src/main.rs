@@ -1,12 +1,12 @@
-//! # Lingo 复杂嵌套配置示例
+//! # QuantumConfig 复杂嵌套配置示例
 //!
-//! 这个示例展示了如何使用 Lingo 处理复杂的嵌套配置结构，包括：
+//! 这个示例展示了如何使用 QuantumConfig 处理复杂的嵌套配置结构，包括：
 //! - 嵌套的配置结构体
 //! - 数组和向量配置
 //! - 可选字段和默认值
 //! - 复杂数据类型的配置
 
-use lingo::Config;
+use quantum_config::Config;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::error::Error;
@@ -295,7 +295,7 @@ impl Default for AppConfig {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    println!("=== Lingo 复杂嵌套配置示例 ===\n");
+    println!("=== QuantumConfig 复杂嵌套配置示例 ===\n");
     
     // 加载配置
     println!("正在加载复杂嵌套配置...");

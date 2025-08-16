@@ -1,6 +1,6 @@
 //! Web 服务器配置示例
 //!
-//! 这个示例展示了如何使用 Lingo 配置一个完整的 Web 服务器，包括：
+//! 这个示例展示了如何使用 QuantumConfig 配置一个完整的 Web 服务器，包括：
 //! - 服务器基本配置（主机、端口、工作线程等）
 //! - TLS/SSL 配置
 //! - CORS 配置
@@ -12,12 +12,12 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use lingo::Config;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, error::Error, net::SocketAddr};
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use quantum_config::Config;
 
 #[derive(Config, Serialize, Deserialize, Debug, Default)]
 #[config(env_prefix = "WEB_")]
@@ -204,7 +204,7 @@ struct ConfigSummary {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    println!("=== Lingo Web 服务器配置示例 ===");
+    println!("=== QuantumConfig Web 服务器配置示例 ===");
     println!();
 
     // 加载配置
@@ -299,7 +299,7 @@ async fn create_app(config: &ServerConfig) -> Result<Router, Box<dyn Error>> {
 async fn root_handler() -> Json<ApiResponse<&'static str>> {
     Json(ApiResponse {
         success: true,
-        data: Some("Welcome to Lingo Web Server Example!"),
+        data: Some("Welcome to QuantumConfig Web Server Example!"),
         message: "Server is running".to_string(),
     })
 }
@@ -316,7 +316,7 @@ async fn info_handler() -> Json<ApiResponse<ServerInfo>> {
     let config = ServerConfig::new(); // 在实际应用中，这应该从应用状态中获取
 
     let info = ServerInfo {
-        name: "Lingo Web Server Example".to_string(),
+        name: "QuantumConfig Web Server Example".to_string(),
         version: "0.2.0".to_string(),
         uptime: "N/A".to_string(), // 在实际应用中计算运行时间
         config_summary: ConfigSummary {

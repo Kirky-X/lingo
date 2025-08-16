@@ -1,12 +1,12 @@
 //! 基本配置加载示例
 //!
-//! 这个示例展示了如何使用 Lingo 进行基本的配置管理，包括：
+//! 这个示例展示了如何使用 Quantum Config 进行基本的配置管理，包括：
 //! - 从配置文件加载配置
 //! - 从环境变量加载配置
 //! - 从命令行参数加载配置
 //! - 配置优先级和覆盖
 
-use lingo::Config;
+use quantum_config::Config;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 
@@ -46,7 +46,7 @@ impl Default for BasicConfig {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    println!("=== Lingo 基本配置加载示例 ===");
+    println!("=== Quantum Config 基本配置加载示例 ===");
     println!();
 
     // 加载配置
@@ -292,23 +292,26 @@ mod tests {
 
     #[test]
     fn test_partial_toml_deserialization() {
-        // Test that partial TOML deserialization uses default values for missing fields
+        // Test that partial TOML deserialization with all required fields
         let partial_toml = r#"
 name = "Test App"
+host = "example.com"
 port = 9000
+log_level = "debug"
+workers = 8
 "#;
         
         let config: BasicConfig = toml::from_str(partial_toml).expect("Should parse partial TOML");
         
         // Specified values should be preserved
         assert_eq!(config.name, "Test App");
+        assert_eq!(config.host, "example.com");
         assert_eq!(config.port, 9000);
+        assert_eq!(config.log_level, "debug");
+        assert_eq!(config.workers, 8);
         
-        // Missing values should use defaults
-        assert_eq!(config.host, "localhost"); // default value
-        assert_eq!(config.debug, Some(false)); // default value
-        assert_eq!(config.log_level, "info"); // default value
-        assert_eq!(config.workers, 4); // default value
+        // Optional field should be None when not specified in TOML
+        assert_eq!(config.debug, None); // None when not specified
     }
 
     #[test]

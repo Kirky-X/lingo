@@ -3,7 +3,7 @@
 //! 提供文件读取的通用trait，允许用户自定义文件读取行为。
 
 use std::path::Path;
-use crate::error::LingoError;
+use crate::error::QuantumConfigError;
 
 /// 文件读取器trait
 /// 
@@ -19,7 +19,7 @@ pub trait FileReader: Send + Sync {
     /// # 返回值
     /// 
     /// 返回文件内容字符串，如果读取失败则返回错误
-    fn read_content(&self, path: &Path) -> Result<String, LingoError>;
+    fn read_content(&self, path: &Path) -> Result<String, QuantumConfigError>;
     
     /// 检查文件是否存在
     /// 
@@ -48,9 +48,9 @@ impl StandardFileReader {
 }
 
 impl FileReader for StandardFileReader {
-    fn read_content(&self, path: &Path) -> Result<String, LingoError> {
+    fn read_content(&self, path: &Path) -> Result<String, QuantumConfigError> {
         std::fs::read_to_string(path)
-            .map_err(|e| LingoError::FileReadError {
+            .map_err(|e| QuantumConfigError::FileReadError {
                 path: path.to_string_lossy().to_string(),
                 source: e,
             })
@@ -88,7 +88,7 @@ mod tests {
         
         assert!(result.is_err());
         match result.unwrap_err() {
-            LingoError::FileReadError { path, .. } => {
+            QuantumConfigError::FileReadError { path, .. } => {
                 assert_eq!(path, "nonexistent.txt");
             }
             _ => panic!("Expected FileReadError"),
@@ -135,11 +135,11 @@ mod tests {
     }
     
     impl FileReader for MockFileReader {
-        fn read_content(&self, _path: &Path) -> Result<String, LingoError> {
+        fn read_content(&self, _path: &Path) -> Result<String, QuantumConfigError> {
             if self.should_exist {
                 Ok(self.content.clone())
             } else {
-                Err(LingoError::FileReadError {
+                Err(QuantumConfigError::FileReadError {
                     path: "mock_file.txt".to_string(),
                     source: std::io::Error::new(std::io::ErrorKind::NotFound, "Mock file not found"),
                 })

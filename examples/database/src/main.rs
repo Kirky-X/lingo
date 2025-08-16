@@ -1,6 +1,6 @@
 //! 数据库配置示例
 //!
-//! 这个示例展示了如何使用 Lingo 配置数据库连接，包括：
+//! 这个示例展示了如何使用 QuantumConfig 配置数据库连接，包括：
 //! - 多种数据库类型支持（PostgreSQL、MySQL、SQLite）
 //! - 连接池配置
 //! - 连接超时和重试配置
@@ -8,7 +8,7 @@
 //! - SSL/TLS 配置
 //! - 读写分离配置
 
-use lingo::Config;
+use quantum_config::Config;
 use serde::{Deserialize, Serialize};
 use std::{error::Error, time::Duration};
 use tracing::{error, info, warn};
@@ -77,7 +77,7 @@ impl Default for DatabaseConnectionConfig {
             password: None,
             connect_timeout: 30,
             query_timeout: 60,
-            application_name: "lingo_app".to_string(),
+            application_name: "quantum_config_app".to_string(),
         }
     }
 }
@@ -231,7 +231,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .with(tracing_subscriber::fmt::layer().pretty())
         .init();
 
-    println!("=== Lingo 数据库配置示例 ===");
+    println!("=== QuantumConfig 数据库配置示例 ===");
     println!();
 
     // 加载配置
