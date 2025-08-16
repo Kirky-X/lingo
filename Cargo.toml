@@ -15,7 +15,9 @@ keywords = ["config", "configuration", "settings", "toml", "json"]
 categories = ["config", "development-tools"]
 exclude = [
     ".idea/",
+    ".trae/",
     "DesignSpecification.md",
+    "Cargo.toml.orig",
     "target/",
     "examples/*/target/",
     "quantum_config_derive/target/",
