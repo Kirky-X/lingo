@@ -16,6 +16,19 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Show commit and toolchain info
+      run: |
+        echo "HEAD SHA:" && git rev-parse HEAD
+        echo "Recent commits:" && git log --oneline -n 3 || true
+        echo "rustc version:" && rustc -Vv
+        echo "cargo version:" && cargo -Vv
+        echo "Grep for problematic type aliases (should find none):"
+        grep -Rn "pub type QuantumConfigEnvProvider" src || true
+        grep -Rn "pub type QuantumConfigFileProviderGeneric" src || true
+    - name: Clean
+      run: cargo clean
     - name: Build
       run: cargo build --verbose
     - name: Run tests
