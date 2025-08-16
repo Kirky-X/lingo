@@ -2,10 +2,10 @@
 
 一个强大且灵活的 Rust 配置管理库，让配置加载变得简单而优雅。
 
-[![Crates.io](https://img.shields.io/crates/v/quantum_config.svg)](https://crates.io/crates/quantum_config)
-[![Documentation](https://docs.rs/quantum_config/badge.svg)](https://docs.rs/quantum_config)
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Rust](https://github.com/Kirky-X/quantum_config/actions/workflows/rust.yml/badge.svg)](https://github.com/Kirky-X/quantum_config/actions/workflows/rust.yml)
+[![Crates.io](https://img.shields.io/crates/v/quantum_config.svg)](https://crates.io/crates/quantum_config)
+[![Docs.rs](https://docs.rs/quantum_config/badge.svg)](https://docs.rs/quantum_config)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 ## 📋 项目范围
 
@@ -56,10 +56,28 @@ use quantum_config::Config; // derive 宏从 quantum_config 暴露
 use serde::{Deserialize, Serialize};
 
 #[derive(Config, Serialize, Deserialize, Debug, Default)]
+#[config(env_prefix = "MYAPP_")]
 struct AppConfig {
+    #[quantum_config_opt(description = "服务器主机地址", default = "\"localhost\".to_string()")]
     host: String,
+
+    #[quantum_config_opt(description = "服务器端口", default = "8080")]
     port: u16,
-    debug: bool,
+
+    #[quantum_config_opt(description = "启用调试模式", name_clap_long = "debug")]
+    debug_mode: Option<bool>,
+
+    #[quantum_config_opt(flatten)]
+    database: DatabaseConfig,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+struct DatabaseConfig {
+    #[quantum_config_opt(description = "数据库 URL")]
+    url: Option<String>,
+
+    #[quantum_config_opt(description = "最大连接数", default = "10")]
+    max_connections: u32,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -67,7 +85,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = AppConfig::load()?;
     
     println!("服务器将在 {}:{} 启动", config.host, config.port);
-    println!("调试模式: {}", config.debug);
+    println!("调试模式: {:?}", config.debug_mode);
     
     Ok(())
 }

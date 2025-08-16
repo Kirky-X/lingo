@@ -5,6 +5,7 @@ A powerful and flexible Rust configuration management library that makes configu
 [![Rust](https://github.com/Kirky-X/quantum_config/actions/workflows/rust.yml/badge.svg)](https://github.com/Kirky-X/quantum_config/actions/workflows/rust.yml)
 [![Crates.io](https://img.shields.io/crates/v/quantum_config.svg)](https://crates.io/crates/quantum_config)
 [![Docs.rs](https://docs.rs/quantum_config/badge.svg)](https://docs.rs/quantum_config)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 ## 📋 Scope
 
@@ -33,133 +34,10 @@ About the examples/ directory: The examples demonstrate using Quantum Config in 
 - **Deep Clap Integration** - Automatic command-line argument parsing with help and version information
 - **Nested Structures** - Support for arbitrarily deep nested configuration structures
 - **Template Generation** - Automatic generation of commented configuration file templates
+- **Error Handling** - Comprehensive configuration management error types
+- **Path Resolution** - Automatic discovery of system and user configuration directories
 - **Async Support** - Both synchronous and asynchronous loading methods
 - **Cross-platform** - Support for Linux, macOS, and Windows
-
-## 🚀 Quick Start
-
-### Add Dependencies
-
-```toml
-[dependencies]
-quantum_config = "0.2.0"
-serde = { version = "1.0", features = ["derive"] }
-```
-
-### Basic Usage
-
-```rust
-use quantum_config::Config;
-use serde::{Deserialize, Serialize};
-
-#[derive(Config, Serialize, Deserialize, Debug, Default)]
-#[config(env_prefix = "MYAPP_")]
-struct AppConfig {
-    #[quantum_config_opt(description = "Server host address", default = "\"localhost\".to_string()")]
-    host: String,
-    
-    #[quantum_config_opt(description = "Server port", default = "8080")]
-    port: u16,
-    
-    #[quantum_config_opt(description = "Enable debug mode", name_clap_long = "debug")]
-    debug_mode: Option<bool>,
-    
-    #[quantum_config_opt(flatten)]
-    database: DatabaseConfig,
-}
-
-#[derive(Serialize, Deserialize, Debug, Default)]
-struct DatabaseConfig {
-    #[quantum_config_opt(description = "Database URL")]
-    url: Option<String>,
-    
-    #[quantum_config_opt(description = "Maximum connections", default = "10")]
-    max_connections: u32,
-}
-
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Load configuration
-    let config = AppConfig::load()?;
-    
-    println!("Server will start on {}:{}", config.host, config.port);
-    println!("Debug mode: {:?}", config.debug_mode);
-    
-    Ok(())
-}
-```
-
-### Configuration File Example
-
-**config.toml**
-```toml
-# Server host address
-host = "0.0.0.0"
-# Server port
-port = 3000
-
-[database]
-# Database URL
-url = "postgresql://localhost/myapp"
-# Maximum connections
-max_connections = 20
-```
-
-### Environment Variables
-
-```bash
-export MYAPP_HOST="0.0.0.0"
-export MYAPP_PORT="3000"
-export MYAPP_DATABASE_URL="postgresql://localhost/myapp"
-```
-
-### Command Line Arguments
-
-```bash
-./myapp --host 0.0.0.0 --port 3000 --debug --database-url postgresql://localhost/myapp
-```
-
-## 📖 Detailed Documentation
-
-### Configuration Loading Priority
-
-Quantum Config loads and merges configuration in the following priority order (later sources override earlier ones):
-
-1. **System configuration files** - `/etc/{app_name}/config.{toml,json,ini}`
-2. **User configuration files** - `~/.config/{app_name}/config.{toml,json,ini}`
-3. **Specified configuration files** - Via `--config` parameter
-4. **Environment variables** - Using `{ENV_PREFIX}_` prefix
-5. **Command line arguments** - Highest priority
-
-### Field Attributes Reference
-
-#### `#[quantum_config_opt(...)]` Attributes
-
-- `description = "description"` - Field description for help text and config templates
-- `default = "expression"` - Default value expression
-- `name_config = "name"` - Key name in configuration files
-- `name_env = "name"` - Environment variable name
-- `name_clap_long = "name"` - Long command-line option name
-- `name_clap_short = 'c'` - Short command-line option
-- `flatten` - Flatten nested structures
-- `skip` - Skip this field
-- `clap(...)` - Additional attributes passed to clap
-
-#### `#[config(...)]` Struct Attributes
-
-- `env_prefix = "prefix"` - Environment variable prefix, e.g. `"MYAPP_"`
-
-### Async Support
-
-With the `async` feature enabled, you can use asynchronous loading:
-
-```rust
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = AppConfig::load_async().await?;
-    // ...
-    Ok(())
-}
-```
 
 ### Configuration Template Generation
 
@@ -182,6 +60,9 @@ match AppConfig::load() {
     }
     Err(QuantumConfigError::Io { source, path }) => {
         eprintln!("IO error: {:?} - {}", path, source);
+    }
+    Err(QuantumConfigError::Figment(figment_error)) => {
+        eprintln!("Configuration extraction error: {}", figment_error);
     }
     Err(e) => eprintln!("Other error: {}", e),
 }
