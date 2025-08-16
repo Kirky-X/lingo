@@ -8,6 +8,13 @@ description = "Derive macros for the quantum_config library"
 repository = "https://github.com/Kirky-X/quantum_config"
 keywords = ["config", "configuration", "derive", "macro"]
 categories = ["config", "development-tools"]
+exclude = [
+    "Cargo.toml.orig",
+    "target/",
+    "*.log",
+    ".DS_Store",
+    "Thumbs.db"
+]
 
 [lib]
 proc-macro = true
