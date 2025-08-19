@@ -37,15 +37,20 @@
 
 pub mod error;
 pub mod meta;
+pub mod path_conversion;
 pub mod paths;
 pub mod providers;
 
 #[cfg(test)]
 mod integration_tests;
 
+#[cfg(test)]
+mod security_tests;
+
 // Re-export main types
 pub use error::{ConfigDirType, QuantumConfigError};
 pub use meta::{ClapAttrsMeta, FieldMeta, QuantumConfigAppMeta, StructMeta};
+// PathConverter and PathFormat are internal utilities, not exposed to users
 pub use paths::{add_specified_config_file, resolve_config_files, ConfigFilePath, ConfigFileType};
 
 // 对外重导出 Serde 常用 traits

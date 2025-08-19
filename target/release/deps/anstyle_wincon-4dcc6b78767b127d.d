@@ -1,0 +1,10 @@
+D:\project\quantum_config\target\release\deps\libanstyle_wincon-4dcc6b78767b127d.rmeta: D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-wincon-3.0.9\src\lib.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-wincon-3.0.9\src\ansi.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-wincon-3.0.9\src\stream.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-wincon-3.0.9\src\windows.rs
+
+D:\project\quantum_config\target\release\deps\libanstyle_wincon-4dcc6b78767b127d.rlib: D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-wincon-3.0.9\src\lib.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-wincon-3.0.9\src\ansi.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-wincon-3.0.9\src\stream.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-wincon-3.0.9\src\windows.rs
+
+D:\project\quantum_config\target\release\deps\anstyle_wincon-4dcc6b78767b127d.d: D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-wincon-3.0.9\src\lib.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-wincon-3.0.9\src\ansi.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-wincon-3.0.9\src\stream.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-wincon-3.0.9\src\windows.rs
+
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-wincon-3.0.9\src\lib.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-wincon-3.0.9\src\ansi.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-wincon-3.0.9\src\stream.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-wincon-3.0.9\src\windows.rs:

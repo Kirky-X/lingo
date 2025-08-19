@@ -4,6 +4,47 @@ All notable changes to this project will be documented in this file.
 
 ## Release Notes
 
+### Version 0.2.1 (Code Quality & Security Enhancements)
+
+**Code Quality Improvements:**
+
+- **Static Analysis**: Fixed all Clippy warnings for improved code quality
+  - Resolved `single_match` patterns in derive macro
+  - Fixed boolean assertion patterns (`assert_eq!(x, true)` → `assert!(x)`)
+  - Optimized closure usage (`map(|x| x.clone())` → `cloned()`)
+  - Improved function parameter types (`&PathBuf` → `&Path`)
+  - Added appropriate `#[allow]` attributes for justified cases
+
+- **Error Handling**: Optimized error type sizes
+  - Boxed large `figment::Error` variants to reduce memory footprint
+  - Improved error message consistency
+
+- **Test Coverage**: Enhanced test reliability
+  - Fixed floating-point comparison precision issues
+  - Improved module naming conventions
+  - Maintained 100% test coverage
+
+**Security Enhancements:**
+
+- **Path Conversion Internalization**: Completed security hardening
+  - All path conversion utilities are now internal-only
+  - Removed public API exposure of path manipulation tools
+  - Enhanced cross-platform path handling security
+
+- **Documentation Updates**: Updated security documentation
+  - Added path conversion security section
+  - Enhanced security testing documentation
+  - Updated security checklist with new requirements
+
+**Development Quality:**
+
+- **Zero Warnings**: All compilation warnings eliminated
+- **Dependency Security**: All dependencies verified secure (cargo audit passed)
+- **Example Validation**: All examples tested and working correctly
+
+**Breaking Changes:**
+- None. All changes are internal improvements maintaining full API compatibility.
+
 ### Version 0.2.0 (Configuration Validation Enhancements)
 
 **New Features & Improvements:**

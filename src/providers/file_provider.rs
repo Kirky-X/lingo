@@ -373,13 +373,13 @@ mod tests {
 
         assert_eq!(provider.path, PathBuf::from("/path/to/config.toml"));
         assert_eq!(provider.format, FileFormat::Toml);
-        assert_eq!(provider.is_required, true);
+        assert!(provider.is_required);
         assert_eq!(provider.max_parse_depth, 100);
     }
 
     #[test]
     fn test_quantum_config_file_provider_from_path_success() {
-        let result = QuantumConfigFileProvider::from_path("/path/to/config.toml", true, 100);
+        let result = QuantumConfigFileProvider::from_path("/path/to/config.toml", true, 32);
         assert!(result.is_ok());
 
         let provider = result.unwrap();

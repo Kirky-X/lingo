@@ -23,7 +23,8 @@ impl Default for QuantumConfigAppMeta {
             app_name: "app".to_string(),
             env_prefix: None,
             behavior_version: 1,
-            max_parse_depth: 128,
+            // 降低默认解析深度以防止深度嵌套攻击
+            max_parse_depth: 32,
         }
     }
 }
@@ -168,7 +169,7 @@ mod tests {
         assert_eq!(meta.app_name, "app");
         assert_eq!(meta.env_prefix, None);
         assert_eq!(meta.behavior_version, 1);
-        assert_eq!(meta.max_parse_depth, 128);
+        assert_eq!(meta.max_parse_depth, 32);
     }
 
     #[test]

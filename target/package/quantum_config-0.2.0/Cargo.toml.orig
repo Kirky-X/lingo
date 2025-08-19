@@ -1,0 +1,67 @@
+[workspace]
+members = ["quantum_config_derive", "examples/basic", "examples/web_server", "examples/database", "examples/nested", "examples/async", "examples/template", "examples/custom_file_reader"]
+resolver = "2"
+
+[package]
+name = "quantum_config"
+version = "0.2.0"
+edition = "2021"
+license = "Apache-2.0"
+authors = ["Kirky.X <Kirky-X@outlook.com>"]
+repository = "https://github.com/Kirky-X/quantum_config"
+description = "A powerful and flexible configuration management library for Rust applications."
+readme = "README.md"
+keywords = ["config", "configuration", "settings", "toml", "json"]
+categories = ["config", "development-tools"]
+exclude = [
+    ".idea/",
+    ".trae/",
+    "DesignSpecification.md",
+    "Cargo.toml.orig",
+    "target/",
+    "examples/*/target/",
+    "quantum_config_derive/target/",
+    "*.log",
+    ".DS_Store",
+    "Thumbs.db"
+]
+
+[dependencies]
+# Serialization
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+toml = "0.8.23"
+toml_edit = { version = "0.22.27", features = ["serde"] }
+rust-ini = "0.21"
+
+# Configuration Management
+figment = { version = "0.10.19", features = ["toml", "json", "env"] }
+
+# CLI Argument Parsing
+clap = { version = "4.5.40", features = ["derive", "env"] }
+
+# Error Handling
+thiserror = "2.0.12"
+
+# Logging & Tracing (optional)
+log = { version = "0.4.27", optional = true }
+tracing = { version = "0.1.41", optional = true }
+tracing-subscriber = { version = "0.3.19", features = ["fmt", "env-filter", "json"], optional = true }
+
+# Async Runtime (optional)
+tokio = { version = "1.45.1", features = ["fs", "rt"], optional = true }
+
+# Filesystem Paths
+directories = "6.0.0"
+
+# Derive macros
+quantum_config_derive = { path = "quantum_config_derive", version = "0.2.0" }
+
+[dev-dependencies]
+tempfile = "3.20.0"
+
+[features]
+default = ["log-facade"]
+log-facade = ["log"]
+tracing-support = ["tracing", "dep:tracing-subscriber", "log-facade"]
+async = ["dep:tokio"]

@@ -63,6 +63,44 @@ impl QuantumConfigEnvProvider {
         }
     }
 
+    /// 验证环境变量键名的安全性
+    pub fn validate_env_key(key: &str) -> Result<(), QuantumConfigError> {
+        // 检查键名长度（防止过长的键名）
+        if key.len() > 256 {
+            return Err(QuantumConfigError::ValidationError(
+                "Environment variable key too long (max 256 characters)".to_string()
+            ));
+        }
+        
+        // 检查是否包含危险字符
+        if key.contains('\0') || key.contains('\n') || key.contains('\r') {
+            return Err(QuantumConfigError::ValidationError(
+                "Environment variable key contains invalid characters".to_string()
+            ));
+        }
+        
+        Ok(())
+    }
+    
+    /// 验证环境变量值的安全性
+    pub fn validate_env_value(value: &str) -> Result<(), QuantumConfigError> {
+        // 检查值长度（防止过长的值）
+        if value.len() > 8192 {
+            return Err(QuantumConfigError::ValidationError(
+                "Environment variable value too long (max 8192 characters)".to_string()
+            ));
+        }
+        
+        // 检查是否包含空字节
+        if value.contains('\0') {
+            return Err(QuantumConfigError::ValidationError(
+                "Environment variable value contains null bytes".to_string()
+            ));
+        }
+        
+        Ok(())
+    }
+
     /// 读取并处理环境变量
     fn read_env_vars(&self) -> Result<Map<String, Value>, QuantumConfigError> {
         let mut env_map = Map::new();
@@ -71,6 +109,10 @@ impl QuantumConfigEnvProvider {
         let env_vars: HashMap<String, String> = env::vars().collect();
 
         for (key, value) in env_vars {
+            // 验证环境变量键名和值的安全性
+            Self::validate_env_key(&key)?;
+            Self::validate_env_value(&value)?;
+            
             // 检查是否匹配前缀
             if !key.starts_with(&self.prefix) {
                 continue;
@@ -229,8 +271,8 @@ mod tests {
 
         assert_eq!(provider.prefix, "TEST_");
         assert_eq!(provider.separator, "__");
-        assert_eq!(provider.ignore_empty, true);
-        assert_eq!(provider.lowercase_keys, true);
+        assert!(provider.ignore_empty);
+        assert!(provider.lowercase_keys);
     }
 
     #[test]
@@ -239,8 +281,8 @@ mod tests {
 
         assert_eq!(provider.prefix, "MYAPP_");
         assert_eq!(provider.separator, "__");
-        assert_eq!(provider.ignore_empty, true);
-        assert_eq!(provider.lowercase_keys, true);
+        assert!(provider.ignore_empty);
+        assert!(provider.lowercase_keys);
     }
 
     #[test]

@@ -132,7 +132,7 @@ ttl = 600
         assert_eq!(config.database.url, "postgresql://localhost/testdb");
         assert_eq!(config.database.pool_size, 20);
         assert_eq!(config.database.timeout, 60);
-        assert_eq!(config.cache.as_ref().unwrap().enabled, true);
+        assert!(config.cache.as_ref().unwrap().enabled);
         assert_eq!(config.cache.as_ref().unwrap().ttl, 600);
         // 测试 flatten 字段
         assert_eq!(config.logging.log_level, "debug");
@@ -407,7 +407,7 @@ timeout = 30
         // 验证可选字段通过环境变量正确设置
         assert!(config.cache.is_some());
         let cache = config.cache.unwrap();
-        assert_eq!(cache.enabled, true);
+        assert!(cache.enabled);
         assert_eq!(cache.ttl, 1200);
         
         // 清理环境变量
@@ -504,7 +504,7 @@ deep_value = "file_deep"
         // 验证深度嵌套配置正确加载和覆盖
         assert_eq!(config.level1.value1, "env_value"); // 环境变量覆盖
         assert_eq!(config.level1.level2.value2, 42); // 文件配置
-        assert_eq!(config.level1.level2.level3.value3, true); // 文件配置
+        assert!(config.level1.level2.level3.value3); // 文件配置
         assert_eq!(config.level1.level2.level3.deep_value, "env_deep"); // 环境变量覆盖
         
         // 清理环境变量
@@ -632,7 +632,7 @@ ttl = 600
         assert_eq!(cfg.database.pool_size, 20);
         assert_eq!(cfg.database.timeout, 60);
         // INI 中的布尔值现在支持类型解析，应为布尔 true
-        assert_eq!(cfg.cache.as_ref().unwrap().enabled, true);
+        assert!(cfg.cache.as_ref().unwrap().enabled);
         assert_eq!(cfg.cache.as_ref().unwrap().ttl, 600);
         // flatten 字段
         assert_eq!(cfg.logging.log_level, "debug");

@@ -101,7 +101,7 @@ impl QuantumConfigClapProvider {
             } else {
                 // 对于其他参数，尝试获取字符串值
                 let values = if let Some(values) = self.matches.get_many::<String>(arg_name) {
-                    values.map(|s| s.clone()).collect()
+                    values.cloned().collect()
                 } else if let Some(value) = self.matches.get_one::<String>(arg_name) {
                     vec![value.clone()]
                 } else {
@@ -185,7 +185,7 @@ impl QuantumConfigClapProvider {
         let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             // 尝试获取多个值
             if let Some(values) = self.matches.get_many::<String>(arg_name) {
-                return Some(values.map(|s| s.clone()).collect());
+                return Some(values.cloned().collect());
             }
 
             // 尝试获取单个值
@@ -233,6 +233,7 @@ impl QuantumConfigClapProvider {
         self.try_insert_nested(map, &parts, value)
     }
     
+    #[allow(clippy::only_used_in_recursion)]
     fn try_insert_nested(
         &self,
         map: &mut Map<String, Value>,

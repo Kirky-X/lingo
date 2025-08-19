@@ -1,0 +1,13 @@
+D:\project\quantum_config\target\debug\deps\liburl-dec1a49e6f4b0594.rmeta: D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\lib.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\host.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\origin.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\parser.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\path_segments.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\slicing.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\quirks.rs
+
+D:\project\quantum_config\target\debug\deps\liburl-dec1a49e6f4b0594.rlib: D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\lib.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\host.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\origin.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\parser.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\path_segments.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\slicing.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\quirks.rs
+
+D:\project\quantum_config\target\debug\deps\url-dec1a49e6f4b0594.d: D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\lib.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\host.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\origin.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\parser.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\path_segments.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\slicing.rs D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\quirks.rs
+
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\lib.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\host.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\origin.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\parser.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\path_segments.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\slicing.rs:
+D:\SDK\rust\cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.4\src\quirks.rs:

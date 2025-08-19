@@ -1,10 +1,10 @@
 [workspace]
-members = ["quantum_config_derive", "examples/basic", "examples/web_server", "examples/database", "examples/nested", "examples/async", "examples/template", "examples/custom_file_reader"]
+members = ["quantum_config_derive", "examples/basic", "examples/web_server", "examples/database", "examples/nested", "examples/async", "examples/template", "examples/custom_file_reader", "examples/path_conversion"]
 resolver = "2"
 
 [package]
 name = "quantum_config"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 license = "Apache-2.0"
 authors = ["Kirky.X <Kirky-X@outlook.com>"]
@@ -43,6 +43,9 @@ clap = { version = "4.5.40", features = ["derive", "env"] }
 # Error Handling
 thiserror = "2.0.12"
 
+# Path Conversion
+typed-path = "0.11"
+
 # Logging & Tracing (optional)
 log = { version = "0.4.27", optional = true }
 tracing = { version = "0.1.41", optional = true }
@@ -55,7 +58,7 @@ tokio = { version = "1.45.1", features = ["fs", "rt"], optional = true }
 directories = "6.0.0"
 
 # Derive macros
-quantum_config_derive = { path = "quantum_config_derive", version = "0.2.0" }
+quantum_config_derive = { path = "quantum_config_derive", version = "0.2.1" }
 
 [dev-dependencies]
 tempfile = "3.20.0"

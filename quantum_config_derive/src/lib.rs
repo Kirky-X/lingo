@@ -39,22 +39,19 @@ use syn::{parse_macro_input, DeriveInput, Attribute, Meta};
 fn parse_config_attributes(attrs: &[Attribute]) -> Option<String> {
     for attr in attrs {
         if attr.path().is_ident("config") {
-            match &attr.meta {
-                Meta::List(meta_list) => {
-                    let tokens_str = meta_list.tokens.to_string();
-                    // 解析 env_prefix = "VALUE" 模式 (简化版本)
-                    if let Some(start) = tokens_str.find("env_prefix") {
-                        let after_prefix = &tokens_str[start + "env_prefix".len()..];
-                        if let Some(eq_pos) = after_prefix.find('=') {
-                            let value_part = after_prefix[eq_pos + 1..].trim();
-                            if value_part.starts_with('"') && value_part.ends_with('"') {
-                                let prefix = value_part[1..value_part.len()-1].to_string();
-                                return Some(prefix);
-                            }
+            if let Meta::List(meta_list) = &attr.meta {
+                let tokens_str = meta_list.tokens.to_string();
+                // 解析 env_prefix = "VALUE" 模式 (简化版本)
+                if let Some(start) = tokens_str.find("env_prefix") {
+                    let after_prefix = &tokens_str[start + "env_prefix".len()..];
+                    if let Some(eq_pos) = after_prefix.find('=') {
+                        let value_part = after_prefix[eq_pos + 1..].trim();
+                        if value_part.starts_with('"') && value_part.ends_with('"') {
+                            let prefix = value_part[1..value_part.len()-1].to_string();
+                            return Some(prefix);
                         }
                     }
                 }
-                _ => {}
             }
         }
     }
@@ -130,7 +127,7 @@ pub fn derive_config(input: TokenStream) -> TokenStream {
                     .arg(#crate_ident::Arg::new("quiet").long("quiet").short('q').action(#crate_ident::ArgAction::SetTrue))
                     .arg(#crate_ident::Arg::new("output").long("output").short('o').num_args(1))
                     .arg(#crate_ident::Arg::new("format").long("format").num_args(1))
-                    .allow_external_subcommands(true)
+                    // Removed allow_external_subcommands(true) to prevent command injection
                     .get_matches_from(std::env::args());
 
                 if let Some(cfg) = clap_matches.get_one::<String>("config") {

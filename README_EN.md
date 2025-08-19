@@ -25,6 +25,27 @@ About the examples/ directory: The examples demonstrate using Quantum Config in 
 
 **[中文](README.md)** | **[Changelog](CHANGELOG.md)** | **[Documentation](https://docs.rs/quantum_config)**
 
+## 📈 Version Update (v0.2.1)
+
+### 🔒 Security Enhancements
+- **Fixed Command Injection Risk** - Removed `allow_external_subcommands` option from derive macro
+- **Path Traversal Protection** - Implemented path validation and normalization to prevent directory traversal attacks
+- **Information Disclosure Fix** - Filtered sensitive path information from error messages
+- **Enhanced Input Validation** - Added strict validation for environment variables and configuration inputs
+
+### 🛠️ Code Quality Improvements
+- **Zero Warning Build** - Fixed all Clippy warnings, improving code quality
+- **Error Handling Optimization** - Improved error type conversion and handling mechanisms
+- **Test Reliability** - Fixed precision issues in numerical comparison tests
+- **Performance Optimization** - Optimized string processing and memory usage
+
+### 📚 Documentation Enhancements
+- **Security Documentation Update** - Enhanced security best practices and threat model documentation
+- **API Documentation Enhancement** - Improved documentation comments for functions and structs
+- **Example Verification** - Ensured all example code runs correctly
+
+**No Breaking Changes** - Fully backward compatible with v0.2.0
+
 ## 🌟 Features
 
 - **Multi-source Configuration Loading** - Support for TOML, JSON, INI files, environment variables, and command-line arguments
@@ -45,7 +66,7 @@ About the examples/ directory: The examples demonstrate using Quantum Config in 
 
 ```toml
 [dependencies]
-quantum_config = "0.2.0"
+quantum_config = "0.2.1"
 serde = { version = "1.0", features = ["derive"] }
 ```
 

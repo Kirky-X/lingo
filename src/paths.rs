@@ -4,7 +4,9 @@
 
 use crate::error::QuantumConfigError;
 use crate::meta::QuantumConfigAppMeta;
-use std::path::PathBuf;
+use crate::path_conversion::PathConverter;
+use std::path::{PathBuf, Path};
+
 
 /// 配置文件类型
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -63,6 +65,8 @@ impl ConfigFilePath {
     pub fn exists(&self) -> bool {
         self.path.exists() && self.path.is_file()
     }
+    
+    // 路径转换方法已移除 - 路径转换现在在内部自动处理，不对外暴露接口
 }
 
 /// 解析配置文件路径
@@ -168,26 +172,91 @@ fn get_config_directories(app_name: &str) -> Result<Vec<PathBuf>, QuantumConfigE
 /// 添加指定的配置文件路径
 ///
 /// 用于处理通过命令行参数 `--config` 指定的配置文件
+/// 验证路径安全性，防止路径遍历攻击
+pub fn validate_path_security(path: &Path) -> Result<PathBuf, QuantumConfigError> {
+    // 首先检查原始路径是否包含危险的路径遍历模式
+    let path_str = path.to_string_lossy();
+    if path_str.contains("../") || path_str.contains("..\\") {
+        return Err(QuantumConfigError::SecurityViolation {
+            message: format!("Path traversal detected in path: {}", path.display()),
+        });
+    }
+
+    // 尝试规范化路径，如果文件存在的话
+    let normalized_path = if path.exists() {
+        path.canonicalize().map_err(|_| {
+            QuantumConfigError::SpecifiedFileNotFound {
+                path: path.to_path_buf(),
+            }
+        })?
+    } else {
+        // 如果文件不存在，使用绝对路径进行检查
+        std::env::current_dir()
+            .map_err(|_| QuantumConfigError::SecurityViolation {
+                message: "Cannot determine current directory".to_string(),
+            })?
+            .join(path)
+    };
+
+    // 检查规范化后的路径是否包含危险模式
+    let normalized_str = normalized_path.to_string_lossy();
+    if normalized_str.contains("../") || normalized_str.contains("..\\") {
+        return Err(QuantumConfigError::SecurityViolation {
+            message: format!("Path traversal detected in normalized path: {}", normalized_path.display()),
+        });
+    }
+
+    // 确保路径不指向系统敏感目录
+    let sensitive_unix_dirs = ["/etc", "/sys", "/proc", "/dev", "/root", "/bin", "/sbin"];
+    let sensitive_windows_dirs = ["C:\\Windows", "C:\\System32", "C:\\Program Files"];
+    
+    // 检查Unix敏感目录（使用规范化路径和原始路径）
+    for sensitive_dir in &sensitive_unix_dirs {
+        if normalized_str.starts_with(sensitive_dir) || path_str.starts_with(sensitive_dir) {
+            return Err(QuantumConfigError::SecurityViolation {
+                message: format!("Path security violation: Access to sensitive directory denied: {}", sensitive_dir),
+            });
+        }
+    }
+    
+    // 检查Windows敏感目录
+    for sensitive_dir in &sensitive_windows_dirs {
+        if normalized_str.starts_with(sensitive_dir) {
+            return Err(QuantumConfigError::SecurityViolation {
+                message: format!("Path security violation: Access to sensitive directory denied: {}", sensitive_dir),
+            });
+        }
+    }
+
+    Ok(normalized_path)
+}
+
 pub fn add_specified_config_file(
     config_files: &mut Vec<ConfigFilePath>,
     file_path: PathBuf,
 ) -> Result<(), QuantumConfigError> {
+    // 首先将路径转换为当前平台的原生格式
+    let native_path = file_path.to_native_format()?;
+    
+    // 验证路径安全性
+    let safe_path = validate_path_security(&native_path)?;
+
     // 检查文件是否存在
-    if !file_path.exists() {
+    if !safe_path.exists() {
         return Err(QuantumConfigError::SpecifiedFileNotFound {
             path: file_path,
         });
     }
 
     // 检查是否为文件
-    if !file_path.is_file() {
+    if !safe_path.is_file() {
         return Err(QuantumConfigError::SpecifiedFileNotFound {
             path: file_path,
         });
     }
 
     // 从文件扩展名推断文件类型
-    let file_type = file_path
+    let file_type = safe_path
         .extension()
         .and_then(|ext| ext.to_str())
         .and_then(ConfigFileType::from_extension)
@@ -196,7 +265,7 @@ pub fn add_specified_config_file(
         })?;
 
     // 添加到配置文件列表（指定的文件是必需的）
-    config_files.push(ConfigFilePath::new(file_path, file_type, true));
+    config_files.push(ConfigFilePath::new(safe_path, file_type, true));
 
     Ok(())
 }
@@ -258,7 +327,7 @@ mod tests {
             app_name: "test_app".to_string(),
             env_prefix: None,
             behavior_version: 1,
-            max_parse_depth: 128,
+            max_parse_depth: 32,
         };
 
         // 这个测试依赖于系统环境，所以我们只检查函数不会 panic
@@ -291,7 +360,10 @@ mod tests {
 
         assert!(result.is_ok());
         assert_eq!(config_files.len(), 1);
-        assert_eq!(config_files[0].path, temp_file);
+        // 在Windows上，路径可能包含UNC前缀，需要规范化比较
+        let expected_path = temp_file.canonicalize().unwrap_or(temp_file.clone());
+        let actual_path = config_files[0].path.canonicalize().unwrap_or(config_files[0].path.clone());
+        assert_eq!(actual_path, expected_path);
         assert_eq!(config_files[0].file_type, ConfigFileType::Toml);
         assert!(config_files[0].is_required);
     }
@@ -374,7 +446,7 @@ mod tests {
             app_name: "".to_string(),
             env_prefix: None,
             behavior_version: 1,
-            max_parse_depth: 128,
+            max_parse_depth: 32,
         };
 
         let result = resolve_config_files(&app_meta);
@@ -391,5 +463,54 @@ mod tests {
                 // 其他错误也是可以接受的
             }
         }
+    }
+    
+    #[test]
+    fn test_internal_path_conversion() {
+        let temp_dir = TempDir::new().unwrap();
+        let config_path = temp_dir.path().join("test.toml");
+        fs::write(&config_path, "test = true").unwrap();
+        
+        // 测试内部路径转换功能（通过PathConverter trait）
+        let unix_path = config_path.to_unix_format();
+        assert!(unix_path.is_ok());
+        
+        let windows_path = config_path.to_windows_format();
+        assert!(windows_path.is_ok());
+        
+        let native_path = config_path.to_native_format();
+        assert!(native_path.is_ok());
+        
+        let unix_normalized = config_path.normalize_for_platform(false);
+        assert!(unix_normalized.is_ok());
+        
+        let windows_normalized = config_path.normalize_for_platform(true);
+        assert!(windows_normalized.is_ok());
+    }
+    
+    #[test]
+    fn test_add_specified_config_file_with_path_conversion() {
+        let temp_dir = TempDir::new().unwrap();
+        let config_path = temp_dir.path().join("test.toml");
+        fs::write(&config_path, "test = true").unwrap();
+        
+        let mut config_files = Vec::new();
+        
+        // 测试使用路径转换的文件添加
+        let result = add_specified_config_file(&mut config_files, config_path.clone());
+        assert!(result.is_ok());
+        assert_eq!(config_files.len(), 1);
+        
+        let added_file = &config_files[0];
+        assert_eq!(added_file.file_type, ConfigFileType::Toml);
+        assert!(added_file.is_required);
+        assert!(added_file.exists());
+        
+        // 验证内部路径转换功能（通过PathConverter trait）
+        let unix_path = config_path.to_unix_format();
+        assert!(unix_path.is_ok());
+        
+        let windows_path = config_path.to_windows_format();
+        assert!(windows_path.is_ok());
     }
 }

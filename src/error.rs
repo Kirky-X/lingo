@@ -2,8 +2,31 @@
 //!
 //! 定义了 Quantum Config 库中所有可能的错误类型，提供统一的错误处理接口。
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use thiserror::Error;
+
+/// 过滤路径中的敏感信息，用于错误消息显示
+#[allow(unused_variables)] // path_str is used in debug builds
+fn sanitize_path_for_display(path: &Path) -> String {
+    let path_str = path.to_string_lossy();
+    
+    // 在生产环境中隐藏敏感路径信息
+    #[cfg(not(debug_assertions))]
+    {
+        // 只显示文件名，隐藏完整路径
+        if let Some(file_name) = path.file_name() {
+            format!("<sanitized>/{}", file_name.to_string_lossy())
+        } else {
+            "<sanitized_path>".to_string()
+        }
+    }
+    
+    // 在调试环境中显示完整路径
+    #[cfg(debug_assertions)]
+    {
+        path_str.to_string()
+    }
+}
 
 /// 表示正在访问的配置目录类型
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -23,19 +46,44 @@ impl std::fmt::Display for ConfigDirType {
     }
 }
 
-/// 模板格式枚举（临时定义，后续会移到 template 模块）
+/// 配置模板格式枚举
+/// 
+/// 定义支持的配置文件模板格式类型
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TemplateFormat {
+    /// TOML 格式模板
     Toml,
+    /// JSON 格式模板
     Json,
+    /// INI 格式模板
     Ini,
+}
+
+impl TemplateFormat {
+    /// 获取模板格式的文件扩展名
+    pub fn extension(&self) -> &'static str {
+        match self {
+            TemplateFormat::Toml => "toml",
+            TemplateFormat::Json => "json",
+            TemplateFormat::Ini => "ini",
+        }
+    }
+    
+    /// 获取模板格式的显示名称
+    pub fn display_name(&self) -> &'static str {
+        match self {
+            TemplateFormat::Toml => "TOML",
+            TemplateFormat::Json => "JSON",
+            TemplateFormat::Ini => "INI",
+        }
+    }
 }
 
 /// Quantum Config 库中所有操作的统一错误类型
 #[derive(Error, Debug)]
 pub enum QuantumConfigError {
     /// I/O 错误，包含路径信息
-    #[error("I/O error for path {path:?}: {source}")]
+    #[error("I/O error for path {}: {source}", sanitize_path_for_display(path))]
     Io {
         #[source]
         source: std::io::Error,
@@ -51,7 +99,7 @@ pub enum QuantumConfigError {
     },
 
     /// 文件解析错误
-    #[error("Failed to parse {format_name} file {path:?}: {source_error}")]
+    #[error("Failed to parse {format_name} file {}: {source_error}", sanitize_path_for_display(path))]
     FileParse {
         format_name: String,
         path: PathBuf,
@@ -60,7 +108,7 @@ pub enum QuantumConfigError {
 
     /// Figment 配置提取错误
     #[error("Configuration extraction error: {0}")]
-    Figment(#[from] figment::Error),
+    Figment(#[from] Box<figment::Error>),
 
     /// 命令行参数解析错误
     #[error("Command line argument parsing error: {0}")]
@@ -75,25 +123,26 @@ pub enum QuantumConfigError {
     InvalidValue { key_path: String, message: String },
 
     /// 配置目录未找到错误
-    #[error("Configuration directory for {dir_type} not found. Expected at: {expected_path:?}")]
+    #[error("Configuration directory for {dir_type} not found. Expected at: {}", 
+        expected_path.as_ref().map(|p| sanitize_path_for_display(p)).unwrap_or_else(|| "<unknown>".to_string()))]
     ConfigDirNotFound {
         dir_type: ConfigDirType,
         expected_path: Option<PathBuf>,
     },
 
     /// 目录中未找到支持的配置文件
-    #[error("No supported configuration files found in {dir_type} directory: {path:?}")]
+    #[error("No supported configuration files found in {dir_type} directory: {}", sanitize_path_for_display(path))]
     NoConfigFilesFoundInDir {
         dir_type: ConfigDirType,
         path: PathBuf,
     },
 
     /// 指定的配置文件未找到
-    #[error("Specified configuration file not found: {path:?}")]
+    #[error("Specified configuration file not found: {}", sanitize_path_for_display(path))]
     SpecifiedFileNotFound { path: PathBuf },
 
     /// 不支持的配置文件格式
-    #[error("Unsupported configuration file format for: {path:?}")]
+    #[error("Unsupported configuration file format for: {}", sanitize_path_for_display(path))]
     UnsupportedFormat { path: PathBuf },
 
     /// 模板生成错误
@@ -103,13 +152,21 @@ pub enum QuantumConfigError {
         reason: String,
     },
 
-    /// 内部错误
+/// Internal Quantum Config error: {0}]
     #[error("Internal Quantum Config error: {0}")]
     Internal(String),
 
-    /// 应用名称解析失败
+    /// 应用程序名称解析失败
     #[error("Failed to determine application name: {source_error}")]
     AppNameResolution { source_error: String },
+
+    /// 安全违规错误
+    #[error("Security violation: {message}")]
+    SecurityViolation { message: String },
+
+    /// 验证错误
+    #[error("Validation error: {0}")]
+    ValidationError(String),
 }
 
 #[cfg(test)]
@@ -202,7 +259,7 @@ mod tests {
 
         let error_msg = error.to_string();
         assert!(error_msg.contains("Configuration directory for system not found"));
-        assert!(error_msg.contains("None"));
+        assert!(error_msg.contains("<unknown>"));
     }
 
     #[test]

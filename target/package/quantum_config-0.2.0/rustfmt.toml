@@ -1,0 +1,36 @@
+# Rustfmt configuration for quantum_config
+# This file codifies our formatting policy to ensure consistent style across the repository.
+# Keep this file in sync with CONTRIBUTING.md "代码风格细节（rustfmt）" section.
+
+edition = "2021"
+max_width = 100
+use_small_heuristics = "Max"
+newline_style = "Auto"
+
+# Imports
+imports_granularity = "Crate"
+reorder_imports = true
+group_imports = "StdExternalCrate"
+
+# Comments & attributes
+wrap_comments = true
+normalize_comments = true
+format_code_in_doc_comments = true
+format_strings = true
+condense_wildcard_suffixes = true
+
+# Functions and items
+reorder_impl_items = true
+blank_lines_upper_bound = 2
+blank_lines_lower_bound = 0
+spaces_around_ranges = true
+trailing_comma = "Vertical"
+where_single_line = false
+where_style = "Rfc"
+
+# Misc
+binop_separator = "Front"
+match_block_trailing_comma = true
+hex_literal_case = "Lower"
+merge_derives = true
+normalize_doc_attributes = true
